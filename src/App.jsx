@@ -87,6 +87,11 @@ body { margin: 0; }
 .err { background: #FDE2E7; color: #9F1239; border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
 .back { background: none; border: none; color: #2563EB; font-size: 14px; font-weight: 600; padding: 0; margin-bottom: 14px; cursor: pointer; font-family: inherit; }
 .note { font-size: 12px; color: #6B7280; margin-top: 14px; line-height: 1.5; }
+.login-band { background: linear-gradient(120deg, #1B2233 0%, #1E3A6E 100%); padding: 26px 24px; display: flex; justify-content: center; }
+.login-band img { width: 100%; max-width: 280px; height: auto; display: block; }
+.btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #1E2433; border: 1px solid #E3E6EC; border-radius: 999px; padding: 12px 18px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px rgba(30,36,51,.06); }
+.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #9CA3AF; font-size: 12px; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E3E6EC; }
 .link { background: none; border: none; color: #6B7280; font-size: 13px; text-decoration: underline; width: 100%; margin-top: 14px; cursor: pointer; font-family: inherit; }
 `;
 
@@ -119,13 +124,26 @@ function AuthScreen() {
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
 
+  async function signInGoogle() {
+    setError("");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) setError(error.message);
+  }
+
   async function submit(e) {
     e.preventDefault();
     setError("");
     setInfo("");
     setLoading(true);
     try {
-      if (mode === "signin") {
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+        if (error) setError(error.message);
+        else setInfo("Se l'email è registrata, riceverai a breve un link per reimpostare la password (controlla anche lo spam).");
+      } else if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) setError(error.message);
       } else {
@@ -141,32 +159,93 @@ function AuthScreen() {
   return (
     <div className="app" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       <style>{CSS}</style>
-      <div className="card" style={{ width: "100%", maxWidth: 380 }}>
-        <div className="brand" style={{ marginBottom: 18 }}>
-          <div className="logo">€</div>
-          <div>
-            <h1>Compensi mensili</h1>
-            <p>{mode === "signin" ? "Accedi al tuo account" : "Crea un nuovo account"}</p>
-          </div>
+      <div className="card" style={{ width: "100%", maxWidth: 380, padding: 0, overflow: "hidden" }}>
+        <div className="login-band">
+          <img src="/logo-dc.png" alt="Digital Contact – Customer Experience" />
         </div>
+        <div style={{ padding: 18 }}>
+        <div style={{ marginBottom: 18 }}>
+          <h2 style={{ margin: 0 }}>Compensi mensili</h2>
+          <p className="muted" style={{ margin: "2px 0 0" }}>{mode === "signin" ? "Accedi al tuo account" : mode === "signup" ? "Crea un nuovo account" : "Recupera la password"}</p>
+        </div>
+        {mode !== "reset" && <>
+        <button className="btn-google" type="button" onClick={signInGoogle}>
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+          </svg>
+          Accedi con Google
+        </button>
+        <div className="divider"><span>oppure con email</span></div>
+        </>}
         <form onSubmit={submit} className="stack">
           <div className="field">
             <label>Email</label>
             <input className="inp" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-          <div className="field">
-            <label>Password</label>
-            <input className="inp" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
+          {mode !== "reset" && (
+            <div className="field">
+              <label>Password</label>
+              <input className="inp" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+          )}
+          {mode === "signin" && (
+            <button type="button" className="link" style={{ marginTop: -4, textAlign: "right" }} onClick={() => { setMode("reset"); setError(""); setInfo(""); }}>
+              Password dimenticata?
+            </button>
+          )}
           {error && <div className="err" style={{ margin: 0 }}>{error}</div>}
           {info && <div className="muted">{info}</div>}
           <button className="btn-primary" type="submit" disabled={loading}>
-            {loading ? "Attendere…" : mode === "signin" ? "Accedi" : "Registrati"}
+            {loading ? "Attendere…" : mode === "signin" ? "Accedi" : mode === "signup" ? "Registrati" : "Invia link di recupero"}
           </button>
         </form>
         <button className="link" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setInfo(""); }}>
-          {mode === "signin" ? "Non hai un account? Registrati" : "Hai già un account? Accedi"}
+          {mode === "signin" ? "Non hai un account? Registrati" : mode === "signup" ? "Hai già un account? Accedi" : "Torna all'accesso"}
         </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NewPasswordScreen({ onDone }) {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    if (password !== confirm) { setError("Le due password non coincidono."); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) setError(error.message);
+    else onDone();
+  }
+
+  return (
+    <div className="app" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{CSS}</style>
+      <div className="card" style={{ width: "100%", maxWidth: 380 }}>
+        <h2>Imposta una nuova password</h2>
+        <p className="muted" style={{ marginTop: 0 }}>Scegli una password di almeno 6 caratteri.</p>
+        <form onSubmit={submit} className="stack">
+          <div className="field">
+            <label>Nuova password</label>
+            <input className="inp" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Ripeti la password</label>
+            <input className="inp" type="password" required minLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          </div>
+          {error && <div className="err" style={{ margin: 0 }}>{error}</div>}
+          <button className="btn-primary" type="submit" disabled={loading}>{loading ? "Attendere…" : "Salva password"}</button>
+        </form>
       </div>
     </div>
   );
@@ -174,14 +253,19 @@ function AuthScreen() {
 
 export default function App() {
   const [session, setSession] = useState(undefined);
+  const [recovery, setRecovery] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, sess) => setSession(sess));
+    const { data: listener } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+      setSession(sess);
+    });
     return () => listener.subscription.unsubscribe();
   }, []);
 
   if (session === undefined) return <div className="app"><style>{CSS}</style></div>;
+  if (recovery && session) return <NewPasswordScreen onDone={() => setRecovery(false)} />;
   if (!session) return <AuthScreen />;
   return <MainApp session={session} />;
 }
