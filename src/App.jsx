@@ -356,4 +356,71 @@ function MainApp({ session }) {
                 <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 22, fontWeight: 500 }}>{fmtNum(totalHours, 1)}h</span>
                 <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 16, color: "#6B6A5F" }}>resa {fmtNum(resa * 100, 1)}%</span>
               </div>
-              <p style={{ fontSize: 12,
+              <p style={{ fontSize: 12,color: "#6B6A5F", margin: "8px 0 0" }}>Gettone Luce/Gas: <strong style={{ color: "#2B2A25" }}>{fmtEuro(gettone)}</strong> a contratto</p>
+              <p style={{ fontSize: 12, color: "#6B6A5F", margin: "6px 0 0" }}>Totale Contratti Lordi (Luce+Gas+Telco, escl. VAS): <strong style={{ color: "#2B2A25" }}>{totaleLordiEsclusiVas}</strong></p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {[
+                { label: "Luce", gross: grossLuce, ko: koLuceTotal, netto: nettoLuce, c: catColors.luce },
+                { label: "Gas", gross: grossGas, ko: koGasTotal, netto: nettoGas, c: catColors.gas },
+                { label: "Telco", gross: grossTelco, ko: koTelcoTotal, netto: nettoTelco, c: catColors.telco },
+                { label: "VAS", gross: grossVas, ko: koVasTotal, netto: nettoVas, c: catColors.vas },
+              ].map((r) => (
+                <div key={r.label} style={{ background: r.c.bg, borderRadius: 12, padding: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: r.c.text, marginBottom: 6 }}>{r.label}</div>
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, fontWeight: 500, color: r.c.text }}>{r.netto}</div>
+                  <div style={{ fontSize: 11, color: r.c.text, opacity: 0.8 }}>netti su {r.gross} (KO {r.ko})</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={cardStyle}>
+              <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 10px" }}>Composizione guadagno</p>
+              {[["Paga base", pagaBase], ["Provvigioni Luce+Gas", provvLuceGas], ["Provvigioni Telco", provvTelco], ["Provvigioni VAS", provvVas]].map(([lbl, val]) => (
+                <div key={lbl} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, borderBottom: "1px solid #EFEBDD" }}>
+                  <span style={{ color: "#6B6A5F" }}>{lbl}</span>
+                  <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{fmtEuro(val)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: "#2B2A25", borderRadius: 12, padding: "16px 18px" }}>
+              <p style={{ fontSize: 12, color: "#B4B2A9", margin: "0 0 4px" }}>Guadagno totale — {label}</p>
+              <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 26, fontWeight: 500, color: "#F7F4EA", margin: 0 }}>{fmtEuro(guadagnoTotale)}</p>
+            </div>
+
+            <div style={{ background: "#2B2A25", borderRadius: 12, padding: "16px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ fontSize: 12, color: "#B4B2A9", margin: "0 0 4px" }}>Netto stimato (co.co.co.)</p>
+                <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 26, fontWeight: 500, color: "#F7F4EA", margin: 0 }}>{fmtEuro(nettoStimato)}</p>
+              </div>
+              <button onClick={() => setShowFiscali(true)} style={{ background: "none", border: "1px solid #6B6A5F", borderRadius: 8, padding: "8px 10px", color: "#F7F4EA", fontSize: 12 }}>
+                Dettagli fiscali
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={cardStyle}>
+            <button onClick={() => setShowFiscali(false)} style={{ background: "none", border: "none", color: "#0C447C", fontSize: 13, marginBottom: 14, padding: 0 }}>← Torna al Riepilogo</button>
+            {[
+              ["Contributi previdenziali", contributiPrev],
+              ["Imponibile fiscale", imponibileFiscale],
+              ["IRPEF lorda", irpefLorda],
+              ["Detrazione applicata", detrazione],
+              ["IRPEF netta", irpefNetta],
+            ].map(([lbl, val]) => (
+              <div key={lbl} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", fontSize: 13, borderBottom: "1px solid #EFEBDD" }}>
+                <span style={{ color: "#6B6A5F" }}>{lbl}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{fmtEuro(val)}</span>
+              </div>
+            ))}
+            <p style={{ fontSize: 11, color: "#6B6A5F", marginTop: 14 }}>
+              Stima basata su aliquota IRPEF 23% flat e detrazione da lavoro dipendente fissa a 166,04€/mese, calibrate sui cedolini reali. Valida finché il reddito annuo cumulato resta sotto i 28.000€.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+            }
