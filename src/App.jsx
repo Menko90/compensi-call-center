@@ -26,6 +26,8 @@ body { margin: 0; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .logo { width: 48px; height: 48px; border-radius: 50%; background: #2563EB; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; box-shadow: 0 8px 20px rgba(37,99,235,.35); flex-shrink: 0; }
 .brand h1 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; }
+.logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.uname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; text-transform: capitalize; }
 .brand p { margin: 0; font-size: 12px; color: #6B7280; }
 .logout { background: none; border: none; padding: 0; font-size: 12px; color: #2563EB; text-decoration: underline; cursor: pointer; font-family: inherit; }
 .month { display: flex; align-items: center; background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.95); border-radius: 999px; padding: 8px 6px; box-shadow: 0 4px 16px rgba(30,36,51,.06); }
@@ -141,9 +143,9 @@ function AuthScreen() {
       <style>{CSS}</style>
       <div className="card" style={{ width: "100%", maxWidth: 380 }}>
         <div className="brand" style={{ marginBottom: 18 }}>
-          <div className="logo">V</div>
+          <div className="logo">€</div>
           <div>
-            <h1>VoltNet</h1>
+            <h1>Compensi mensili</h1>
             <p>{mode === "signin" ? "Accedi al tuo account" : "Crea un nuovo account"}</p>
           </div>
         </div>
@@ -198,6 +200,12 @@ function MainApp({ session }) {
 
   const key = monthKey(refDate);
   const userId = session.user.id;
+  const meta = session.user.user_metadata || {};
+  const avatarUrl = meta.avatar_url || meta.picture || "";
+  const displayName = meta.full_name || meta.name
+    ? (meta.full_name || meta.name).split(" ")[0]
+    : (session.user.email || "").split("@")[0];
+  const initial = (displayName || "?").charAt(0).toUpperCase();
 
   const load = useCallback(async (k) => {
     setLoading(true);
@@ -340,10 +348,11 @@ function MainApp({ session }) {
       <div className="wrap">
         <div className="header">
           <div className="brand">
-            <div className="logo">V</div>
+            <div className="logo">
+              {avatarUrl ? <img src={avatarUrl} alt="" referrerPolicy="no-referrer" /> : initial}
+            </div>
             <div style={{ minWidth: 0 }}>
-              <h1>VoltNet</h1>
-              <p>Compensi operatore</p>
+              <h1 className="uname">{displayName}</h1>
               <button className="logout" onClick={() => supabase.auth.signOut()}>Esci</button>
             </div>
           </div>
