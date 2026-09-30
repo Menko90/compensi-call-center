@@ -25,3 +25,4 @@ progetto Supabase, quindi funziona così com'è, senza configurare altro.
 Per qualsiasi modifica (aggiungere un campo, cambiare un calcolo), chiedi il codice
 aggiornato in chat, sostituisci i file nel repository GitHub (anche da telefono, editando
 il file direttamente su github.com) e Vercel ripubblica il sito da solo in automatico.
+Versione 1
