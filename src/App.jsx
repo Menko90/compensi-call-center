@@ -68,6 +68,14 @@ body { margin: 0; }
 .field label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #4B5563; margin-bottom: 8px; }
 .inp { width: 100%; background: rgba(255,255,255,.9); border: 1px solid #EEF0F4; border-radius: 18px; padding: 14px 16px; font-size: 17px; font-family: inherit; color: #1E2433; outline: none; }
 .inp:focus { border-color: #93B4F5; }
+.stepper { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.9); border: 1px solid #EEF0F4; border-radius: 18px; padding: 5px; }
+.stepper button { width: 42px; height: 42px; border-radius: 50%; border: none; background: #EEF0F4; color: #1E2433; font-size: 22px; font-weight: 600; cursor: pointer; flex-shrink: 0; font-family: inherit; line-height: 1; }
+.stepper input { flex: 1; min-width: 0; width: 100%; border: none; background: transparent; text-align: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; color: #1E2433; outline: none; -moz-appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper.small { background: rgba(255,255,255,.75); border: none; width: 160px; }
+.steps { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.step-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 18px; padding: 8px 8px 8px 14px; }
+.step-label { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
 .row { display: grid; grid-template-columns: 1fr 60px 50px 60px; align-items: center; padding: 12px 0; border-bottom: 1px solid #EDEFF3; font-size: 16px; }
 .row:last-child { border-bottom: none; }
@@ -315,12 +323,29 @@ function MainApp({ session }) {
     setRefDate(d);
   }
 
-  function openNew() {
+  async function openNew() {
     const today = new Date();
     const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     setEditingId(null);
-    setForm({ ...emptyForm, date: todayIso.startsWith(key) ? todayIso : `${key}-01` });
+    // ore proposte: quelle dell'ultima giornata inserita (anche di mesi precedenti)
+    let lastHours = "";
+    if (entries.length > 0) {
+      const last = [...entries].sort((a, b) => a.date.localeCompare(b.date))[entries.length - 1];
+      lastHours = String(Number(last.hours));
+    } else {
+      const { data } = await supabase.from("entries").select("hours").order("date", { ascending: false }).limit(1);
+      if (data && data.length) lastHours = String(Number(data[0].hours));
+    }
+    setForm({ ...emptyForm, date: todayIso.startsWith(key) ? todayIso : `${key}-01`, hours: lastHours, luce: "0", gas: "0", telco: "0", vas: "0" });
     setShowForm(true);
+  }
+
+  function step(field, delta, min = 0) {
+    setForm((f) => {
+      const cur = parseFloat(String(f[field]).replace(",", ".")) || 0;
+      const next = Math.max(min, Math.round((cur + delta) * 10) / 10);
+      return { ...f, [field]: String(next) };
+    });
   }
 
   function startEdit(e) {
@@ -502,12 +527,22 @@ function MainApp({ session }) {
                   </div>
                   <div className="field">
                     <label>Ore lavorate</label>
-                    <input className="inp" type="number" inputMode="decimal" step="0.5" min="0" placeholder="0" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} />
+                    <div className="stepper">
+                      <button type="button" onClick={() => step("hours", -0.5)} aria-label="Meno mezz'ora">−</button>
+                      <input type="number" inputMode="decimal" step="0.5" min="0" placeholder="0" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} />
+                      <button type="button" onClick={() => step("hours", 0.5)} aria-label="Più mezz'ora">+</button>
+                    </div>
                   </div>
+                </div>
+                <div className="steps">
                   {catKeys.map((k) => (
-                    <div key={k} className="field">
-                      <label><Dot color={CAT[k].color} />{CAT[k].label} lordi</label>
-                      <input className="inp" type="number" inputMode="numeric" min="0" placeholder="0" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
+                    <div key={k} className="step-row" style={{ background: CAT[k].bg }}>
+                      <span className="step-label"><Dot color={CAT[k].color} />{CAT[k].label}</span>
+                      <div className="stepper small">
+                        <button type="button" onClick={() => step(k, -1)} aria-label={"Meno " + CAT[k].label}>−</button>
+                        <input type="number" inputMode="numeric" min="0" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} style={{ color: CAT[k].color }} />
+                        <button type="button" onClick={() => step(k, 1)} aria-label={"Più " + CAT[k].label} style={{ background: CAT[k].color, color: "#fff" }}>+</button>
+                      </div>
                     </div>
                   ))}
                 </div>
