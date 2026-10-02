@@ -76,6 +76,8 @@ body { margin: 0; }
 .steps { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 .step-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 18px; padding: 8px 8px 8px 14px; }
 .step-label { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
+.hint { font-size: 12px; color: #6B7280; margin-top: 6px; padding-left: 6px; }
+.hint.bad { color: #E11D48; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
 .row { display: grid; grid-template-columns: 1fr 60px 50px 60px; align-items: center; padding: 12px 0; border-bottom: 1px solid #EDEFF3; font-size: 16px; }
 .row:last-child { border-bottom: none; }
@@ -119,6 +121,34 @@ function fmtDay(d) {
   return new Date(d + "T00:00:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" });
 }
 const emptyForm = { date: "", hours: "", luce: "", gas: "", telco: "", vas: "" };
+
+// Ore scritte come ore.minuti: "2.35" o "2,35" = 2 ore e 35 minuti; "6.5" = 6 ore e 50 minuti; "8" = 8 ore.
+// Restituisce le ore in decimale (2.35 -> 2,5833), oppure null se vuoto, NaN se non valido.
+function parseHM(str) {
+  const t = String(str || "").trim().replace(",", ".").replace(":", ".");
+  if (!t) return null;
+  const m = t.match(/^(\d{1,3})(?:\.(\d{1,2}))?$/);
+  if (!m) return NaN;
+  const h = parseInt(m[1], 10);
+  const min = m[2] === undefined ? 0 : (m[2].length === 1 ? parseInt(m[2], 10) * 10 : parseInt(m[2], 10));
+  if (min >= 60) return NaN;
+  return h + min / 60;
+}
+// Da ore decimali a "2.35" (per il campo di inserimento)
+function toHM(dec) {
+  const tot = Math.round(Number(dec) * 60);
+  const h = Math.floor(tot / 60), m = tot % 60;
+  return m ? `${h}.${String(m).padStart(2, "0")}` : `${h}`;
+}
+// Da ore decimali a { h, m } per la visualizzazione
+function splitHM(dec) {
+  const tot = Math.round(Number(dec) * 60);
+  return { h: Math.floor(tot / 60), m: tot % 60 };
+}
+function HoursText({ value }) {
+  const { h, m } = splitHM(value);
+  return <>{h} h{m ? ` ${m} min` : ""}</>;
+}
 
 function Dot({ color }) {
   return <span className="dot" style={{ background: color }} />;
@@ -331,10 +361,10 @@ function MainApp({ session }) {
     let lastHours = "";
     if (entries.length > 0) {
       const last = [...entries].sort((a, b) => a.date.localeCompare(b.date))[entries.length - 1];
-      lastHours = String(Number(last.hours));
+      lastHours = toHM(last.hours);
     } else {
       const { data } = await supabase.from("entries").select("hours").order("date", { ascending: false }).limit(1);
-      if (data && data.length) lastHours = String(Number(data[0].hours));
+      if (data && data.length) lastHours = toHM(data[0].hours);
     }
     setForm({ ...emptyForm, date: todayIso.startsWith(key) ? todayIso : `${key}-01`, hours: lastHours, luce: "0", gas: "0", telco: "0", vas: "0" });
     setShowForm(true);
@@ -352,7 +382,7 @@ function MainApp({ session }) {
     setEditingId(e.id);
     setForm({
       date: e.date,
-      hours: String(e.hours),
+      hours: toHM(e.hours),
       luce: String(e.luce),
       gas: String(e.gas),
       telco: String(e.contratti_telco),
@@ -369,12 +399,13 @@ function MainApp({ session }) {
   }
 
   async function saveEntry() {
-    if (!form.date || !form.hours) return;
+    const parsedHours = parseHM(form.hours);
+    if (!form.date || parsedHours === null || isNaN(parsedHours)) return;
     const row = {
       user_id: userId,
       month: form.date.slice(0, 7),
       date: form.date,
-      hours: parseFloat(String(form.hours).replace(",", ".")) || 0,
+      hours: Math.round(parsedHours * 10000) / 10000,
       luce: parseInt(form.luce) || 0,
       gas: parseInt(form.gas) || 0,
       contratti_telco: parseInt(form.telco) || 0,
@@ -487,7 +518,7 @@ function MainApp({ session }) {
             <div className="grid2">
               <div className="card">
                 <div className="stat-label">Ore totali <Dot color="#9CA3AF" /></div>
-                <div className="stat-val">{fmtNum(totalHours, totalHours % 1 === 0 ? 0 : 1)}<small>h</small></div>
+                <div className="stat-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>min</small></> : null}</div>
               </div>
               <div className="card">
                 <div className="stat-label">Resa oraria <Dot color="#2563EB" /></div>
@@ -527,11 +558,13 @@ function MainApp({ session }) {
                   </div>
                   <div className="field">
                     <label>Ore lavorate</label>
-                    <div className="stepper">
-                      <button type="button" onClick={() => step("hours", -0.5)} aria-label="Meno mezz'ora">−</button>
-                      <input type="number" inputMode="decimal" step="0.5" min="0" placeholder="0" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} />
-                      <button type="button" onClick={() => step("hours", 0.5)} aria-label="Più mezz'ora">+</button>
-                    </div>
+                    <input className="inp" type="text" inputMode="decimal" placeholder="es. 6.30" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} />
+                    {(() => {
+                      const v = parseHM(form.hours);
+                      if (v === null) return <div className="hint">ore.minuti, es. 2.35</div>;
+                      if (isNaN(v)) return <div className="hint bad">Formato non valido (minuti da 00 a 59)</div>;
+                      return <div className="hint">= <HoursText value={v} /></div>;
+                    })()}
                   </div>
                 </div>
                 <div className="steps">
@@ -547,7 +580,7 @@ function MainApp({ session }) {
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-                  <button className="btn-primary" style={{ flex: 1 }} onClick={saveEntry} disabled={!form.date || !form.hours}>
+                  <button className="btn-primary" style={{ flex: 1 }} onClick={saveEntry} disabled={!form.date || parseHM(form.hours) === null || isNaN(parseHM(form.hours))}>
                     {editingId ? "Salva modifiche" : "Salva giornata"}
                   </button>
                   <button className="btn-ghost" onClick={closeForm}>Annulla</button>
@@ -562,7 +595,7 @@ function MainApp({ session }) {
                 <div key={e.id} className="card">
                   <div className="day-top">
                     <span className="muted" style={{ fontSize: 15 }}>
-                      {fmtDay(e.date)}&nbsp;&nbsp;<span style={{ color: "#1E2433" }}>{fmtNum(Number(e.hours), Number(e.hours) % 1 === 0 ? 0 : 1)} h</span>
+                      {fmtDay(e.date)}&nbsp;&nbsp;<span style={{ color: "#1E2433" }}><HoursText value={e.hours} /></span>
                     </span>
                     <div className="acts">
                       <button className="btn-ghost" onClick={() => startEdit(e)}>Modifica</button>
@@ -615,7 +648,7 @@ function MainApp({ session }) {
         ) : !showFiscali ? (
           <div className="stack">
             <div className="grid3">
-              <div className="card"><div className="stat-label">Ore totali</div><div className="stat-val">{fmtNum(totalHours, 1)}</div></div>
+              <div className="card"><div className="stat-label">Ore totali</div><div className="stat-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div></div>
               <div className="card"><div className="stat-label">Resa oraria</div><div className="stat-val">{fmtNum(resa * 100, 1)}%</div></div>
               <div className="card"><div className="stat-label">Gettone</div><div className="stat-val">{gettone}€</div></div>
             </div>
