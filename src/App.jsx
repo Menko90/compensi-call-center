@@ -116,6 +116,8 @@ body { margin: 0; }
 .step-sub { display: block; font-size: 11.5px; font-weight: 500; color: #6B7280; margin-top: 1px; }
 .stepper button:disabled { opacity: .35; cursor: default; }
 .avviso { background: #FFF6E5; color: #7A4A00; border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
+.compenso-giorno { margin-top: 9px; font-size: 12.5px; color: #A3A9B5; }
+.nota-compenso { margin: -6px 0 0; font-size: 11.5px; line-height: 1.45; color: #A3A9B5; }
 `;
 
 function monthKey(d) {
@@ -625,6 +627,11 @@ function MainApp({ session }) {
   const nettoStimato = guadagnoTotale - contributiPrev - irpefNetta;
 
   const catKeys = ["luce", "gas", "telco", "vas"];
+  // compenso lordo stimato di una giornata, con le stesse regole del Riepilogo:
+  // ore × 8,50 € + (luce + gas) × gettone attuale del mese + telco × 10 € + VAS × 2 €. I KO si tolgono a fine mese.
+  const compensoGiorno = (ore, n) => ore * 8.5 + (n.luce + n.gas) * gettone + n.telco * 10 + n.vas * 2;
+  // netto stimato del giorno: la sua parte del netto del mese (contributi e IRPEF si calcolano sul mese intero)
+  const quotaNetto = guadagnoTotale > 0 ? nettoStimato / guadagnoTotale : 1 - 0.118;
   // solo per chi usa le note: avviso (non blocco) se esiste già una giornata nella stessa data
   const doppione = collegato && !editingId && showForm ? entries.find((e) => e.date === form.date) : null;
   const giorniLista = (() => {
@@ -715,6 +722,11 @@ function MainApp({ session }) {
               <h2>Giornate</h2>
               {!showForm && <button className="btn-primary" onClick={openNew}>+ Aggiungi</button>}
             </div>
+            {giorniLista.length > 0 && (
+              <p className="muted nota-compenso">
+                Compenso del giorno stimato: gettone attuale del mese ({gettone} €), netto in proporzione al mese. I KO si tolgono a fine mese.
+              </p>
+            )}
 
             {showForm && (
               <div className="card" ref={formRef} style={{ scrollMarginTop: 12 }}>
@@ -793,6 +805,10 @@ function MainApp({ session }) {
                         <span key={cat} className="chip" style={{ background: CAT[cat].bg, color: CAT[cat].color }}>{CAT[cat].short} {val(cat)}</span>
                       ))}
                     </div>
+                    {(() => {
+                      const lordo = compensoGiorno(e ? Number(e.hours) || 0 : 0, { luce: val("luce"), gas: val("gas"), telco: val("telco"), vas: val("vas") });
+                      return <div className="compenso-giorno">≈ {fmtEuro(lordo)} · netto {fmtEuro(lordo * quotaNetto)}</div>;
+                    })()}
                     {n && totale(n) > 0 && <div className="dalle-note">Dalle note clienti: {testoNumeri(n)}</div>}
                   </div>
                 );
