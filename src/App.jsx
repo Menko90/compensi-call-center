@@ -223,7 +223,8 @@ function AuthScreen() {
     setError("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      // Google chiede sempre quale account usare (evita di entrare per sbaglio con un altro account)
+      options: { redirectTo: window.location.origin, queryParams: { prompt: "select_account" } },
     });
     if (error) setError(error.message);
   }
