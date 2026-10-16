@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "./supabaseClient";
 
 const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
@@ -103,6 +103,19 @@ body { margin: 0; }
 .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: #9CA3AF; font-size: 12px; }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E3E6EC; }
 .link { background: none; border: none; color: #6B7280; font-size: 13px; text-decoration: underline; width: 100%; margin-top: 14px; cursor: pointer; font-family: inherit; }
+.sotto-nome { display: flex; align-items: center; gap: 8px; margin-top: 3px; flex-wrap: wrap; }
+.ponte { display: inline-flex; align-items: center; background: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.95); color: #2563EB; border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; box-shadow: 0 2px 8px rgba(30,36,51,.07); }
+.ore-mancanti { color: #B45309; font-weight: 600; }
+.card-attesa { border: 1.5px dashed #F2C27A; }
+.btn-piccolo { padding: 8px 14px; font-size: 13px; box-shadow: 0 6px 14px rgba(37,99,235,.25); }
+.dalle-note { margin-top: 10px; font-size: 12.5px; color: #6B7280; }
+.from-notes { margin-top: 14px; background: #EAF1FE; border: 1px solid #D3E2FD; color: #1E3A8A; border-radius: 16px; padding: 11px 14px; font-size: 14px; line-height: 1.5; }
+.from-notes b { font-weight: 600; }
+.from-notes.dup { background: #FFF6E5; border-color: #FBE5BC; color: #7A4A00; }
+.btn-notes { display: block; margin-top: 9px; background: #fff; color: #1E2433; border: 1px solid rgba(30,36,51,.12); border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.step-sub { display: block; font-size: 11.5px; font-weight: 500; color: #6B7280; margin-top: 1px; }
+.stepper button:disabled { opacity: .35; cursor: default; }
+.avviso { background: #FFF6E5; color: #7A4A00; border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
 `;
 
 function monthKey(d) {
@@ -121,6 +134,50 @@ function fmtDay(d) {
   return new Date(d + "T00:00:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" });
 }
 const emptyForm = { date: "", hours: "", luce: "", gas: "", telco: "", vas: "" };
+
+// --- contratti che arrivano dal blocco note clienti (solo numeri: giorno e quantità) ---
+const URL_NOTE = "https://note-clienti.vercel.app";
+const TIPI = ["luce", "gas", "telco", "vas"];
+const COL = { luce: "luce", gas: "gas", telco: "contratti_telco", vas: "vas" }; // colonne della tabella entries
+function oggiIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function meseDopo(k) {
+  const [y, m] = k.split("-").map(Number);
+  return m === 12 ? `${y + 1}-01-01` : `${y}-${String(m + 1).padStart(2, "0")}-01`;
+}
+function vuoti() {
+  return { luce: 0, gas: 0, telco: 0, vas: 0, clienti: 0 };
+}
+function totale(n) {
+  return n ? n.luce + n.gas + n.telco + n.vas : 0;
+}
+function sommaNote(righe) {
+  const s = vuoti();
+  const clienti = new Set();
+  for (const r of righe) {
+    const c = { luce: r.n_luce || 0, gas: r.n_gas || 0, telco: r.n_telco || 0, vas: r.n_vas || 0 };
+    TIPI.forEach((k) => { s[k] += c[k]; });
+    if (totale(c) > 0) clienti.add(r.cliente_id);
+  }
+  s.clienti = clienti.size;
+  return s;
+}
+function raggruppaNote(righe) {
+  const perGiorno = {};
+  for (const r of righe) {
+    if (!perGiorno[r.data]) perGiorno[r.data] = [];
+    perGiorno[r.data].push(r);
+  }
+  const out = {};
+  for (const d of Object.keys(perGiorno)) out[d] = sommaNote(perGiorno[d]);
+  return out;
+}
+function testoNumeri(n) {
+  const parti = TIPI.filter((k) => Number(n[k]) > 0).map((k) => `${CAT[k].label} ${n[k]}`);
+  return parti.length ? parti.join(" · ") : "nessun contratto";
+}
 
 // Ore scritte come ore.minuti: "2.35" o "2,35" = 2 ore e 35 minuti; "6.5" = 6 ore e 50 minuti; "8" = 8 ore.
 // Restituisce le ore in decimale (2.35 -> 2,5833), oppure null se vuoto, NaN se non valido.
@@ -319,6 +376,11 @@ function MainApp({ session }) {
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [collegato, setCollegato] = useState(false); // ha collegato il blocco note?
+  const [noteMese, setNoteMese] = useState({}); // contratti dalle note, giorno per giorno
+  const [noteErr, setNoteErr] = useState(false);
+  const [noteForm, setNoteForm] = useState(null); // contratti dalle note per la data del modulo
+  const formRef = useRef(null);
 
   const key = monthKey(refDate);
   const userId = session.user.id;
@@ -329,23 +391,51 @@ function MainApp({ session }) {
     : (session.user.email || "").split("@")[0];
   const initial = (displayName || "?").charAt(0).toUpperCase();
 
-  const load = useCallback(async (k) => {
-    setLoading(true);
+  const load = useCallback(async (k, silenzioso = false) => {
+    if (!silenzioso) setLoading(true);
     setErrorMsg("");
-    const { data: e, error: e1 } = await supabase.from("entries").select("*").eq("month", k).order("date");
-    if (e1) setErrorMsg("Errore nel caricamento delle giornate: " + e1.message);
-    setEntries(e || []);
-    const { data: kRow, error: e2 } = await supabase.from("monthly_ko").select("*").eq("month", k).maybeSingle();
-    if (e2) setErrorMsg((prev) => prev || "Errore nel caricamento dei KO: " + e2.message);
-    setKo(kRow || emptyKo());
+    const [r1, r2, r4] = await Promise.all([
+      supabase.from("entries").select("*").eq("month", k).order("date"),
+      supabase.from("monthly_ko").select("*").eq("month", k).maybeSingle(),
+      supabase.from("note_collegamento").select("user_id").maybeSingle(),
+    ]);
+    if (r1.error) setErrorMsg("Errore nel caricamento delle giornate: " + r1.error.message);
+    setEntries(r1.data || []);
+    if (r2.error) setErrorMsg((prev) => prev || "Errore nel caricamento dei KO: " + r2.error.message);
+    setKo(r2.data || emptyKo());
+    // contratti dalle note: solo per chi ha collegato il blocco note (per gli altri tutto come prima)
+    const conNote = !r4.error && !!r4.data;
+    setCollegato(conNote);
+    if (conNote) {
+      const r3 = await supabase.from("contratti_note").select("data, cliente_id, n_luce, n_gas, n_telco, n_vas").eq("conta", true).gte("data", `${k}-01`).lt("data", meseDopo(k));
+      // se non si caricano, l'app funziona con i numeri scritti a mano e lo segnala
+      setNoteMese(r3.error ? {} : raggruppaNote(r3.data || []));
+      setNoteErr(!!r3.error);
+    } else {
+      setNoteMese({});
+      setNoteErr(false);
+    }
     setLoading(false);
   }, []);
+
+  // chi usa le note: quando torni sull'app i numeri si aggiornano da soli
+  useEffect(() => {
+    if (!collegato) return undefined;
+    const ricarica = () => { if (document.visibilityState === "visible") load(key, true); };
+    document.addEventListener("visibilitychange", ricarica);
+    window.addEventListener("focus", ricarica);
+    return () => {
+      document.removeEventListener("visibilitychange", ricarica);
+      window.removeEventListener("focus", ricarica);
+    };
+  }, [key, load, collegato]);
 
   useEffect(() => {
     load(key);
     setForm(emptyForm);
     setShowForm(false);
     setEditingId(null);
+    setNoteForm(null);
   }, [key, load]);
 
   function changeMonth(delta) {
@@ -353,40 +443,84 @@ function MainApp({ session }) {
     setRefDate(d);
   }
 
-  async function openNew() {
-    const today = new Date();
-    const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    setEditingId(null);
-    // ore proposte: quelle dell'ultima giornata inserita (anche di mesi precedenti)
-    let lastHours = "";
+  // ore proposte: quelle dell'ultima giornata inserita (anche di mesi precedenti)
+  async function oreProposte() {
     if (entries.length > 0) {
       const last = [...entries].sort((a, b) => a.date.localeCompare(b.date))[entries.length - 1];
-      lastHours = toHM(last.hours);
-    } else {
-      const { data } = await supabase.from("entries").select("hours").order("date", { ascending: false }).limit(1);
-      if (data && data.length) lastHours = toHM(data[0].hours);
+      return toHM(last.hours);
     }
-    setForm({ ...emptyForm, date: todayIso.startsWith(key) ? todayIso : `${key}-01`, hours: lastHours, luce: "0", gas: "0", telco: "0", vas: "0" });
-    setShowForm(true);
+    const { data } = await supabase.from("entries").select("hours").order("date", { ascending: false }).limit(1);
+    return data && data.length ? toHM(data[0].hours) : "";
   }
 
-  function step(field, delta, min = 0) {
+  // contratti delle note per un giorno: dal mese già caricato, oppure dal database se è un altro mese
+  async function noteDelGiorno(date) {
+    if (!collegato || !date) return vuoti();
+    if (date.startsWith(key)) return noteMese[date] || vuoti();
+    const { data, error } = await supabase.from("contratti_note").select("cliente_id, n_luce, n_gas, n_telco, n_vas").eq("conta", true).eq("data", date);
+    return error || !data ? vuoti() : sommaNote(data);
+  }
+
+  function vaiAlModulo() {
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  }
+
+  async function openNew() {
+    const todayIso = oggiIso();
+    apriGiorno(todayIso.startsWith(key) ? todayIso : `${key}-01`, false);
+  }
+
+  // nuova giornata: i contratti delle note (se ci sono) sono già nei contatori, metti le ore
+  async function apriGiorno(date, scorri) {
+    setEditingId(null);
+    const [ore, n] = await Promise.all([oreProposte(), noteDelGiorno(date)]);
+    setNoteForm({ date, ...n });
+    setForm({ ...emptyForm, date, hours: ore, luce: String(n.luce), gas: String(n.gas), telco: String(n.telco), vas: String(n.vas) });
+    setShowForm(true);
+    if (scorri) vaiAlModulo();
+  }
+
+  // cambio data nel modulo: cambiano i contratti delle note, restano quelli aggiunti a mano
+  async function cambiaData(d) {
+    const prima = noteForm;
+    setForm((f) => ({ ...f, date: d }));
+    if (editingId || !collegato) return;
+    const n = await noteDelGiorno(d);
+    setNoteForm({ date: d, ...n });
     setForm((f) => {
-      const cur = parseFloat(String(f[field]).replace(",", ".")) || 0;
-      const next = Math.max(min, Math.round((cur + delta) * 10) / 10);
-      return { ...f, [field]: String(next) };
+      if (f.date !== d) return f;
+      const out = { ...f };
+      TIPI.forEach((k) => {
+        const aMano = Math.max(0, (parseInt(f[k]) || 0) - (prima ? prima[k] || 0 : 0));
+        out[k] = String(n[k] + aMano);
+      });
+      return out;
     });
   }
 
+  // quanti contratti di quel tipo arrivano dalle note per la data del modulo
+  function dalleNote(k) {
+    return noteForm && noteForm.date === form.date ? noteForm[k] || 0 : 0;
+  }
+
+  // +/−: non si scende sotto i contratti delle note (quelli si cambiano nel blocco note)
+  function step(field, delta) {
+    const min = dalleNote(field);
+    setForm((f) => ({ ...f, [field]: String(Math.max(min, (parseInt(f[field]) || 0) + delta)) }));
+  }
+
   function startEdit(e) {
+    const primo = entries.find((x) => x.date === e.date)?.id === e.id;
+    const n = primo ? noteMese[e.date] || vuoti() : vuoti();
     setEditingId(e.id);
+    setNoteForm({ date: e.date, ...n });
     setForm({
       date: e.date,
       hours: toHM(e.hours),
-      luce: String(e.luce),
-      gas: String(e.gas),
-      telco: String(e.contratti_telco),
-      vas: String(e.vas),
+      luce: String((Number(e.luce) || 0) + n.luce),
+      gas: String((Number(e.gas) || 0) + n.gas),
+      telco: String((Number(e.contratti_telco) || 0) + n.telco),
+      vas: String((Number(e.vas) || 0) + n.vas),
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -396,20 +530,23 @@ function MainApp({ session }) {
     setEditingId(null);
     setForm(emptyForm);
     setShowForm(false);
+    setNoteForm(null);
   }
 
   async function saveEntry() {
     const parsedHours = parseHM(form.hours);
     if (!form.date || parsedHours === null || isNaN(parsedHours)) return;
+    // nella giornata si salvano solo i contratti aggiunti a mano: quelli delle note sono già contati a parte
+    const aMano = (k) => Math.max(0, (parseInt(form[k]) || 0) - dalleNote(k));
     const row = {
       user_id: userId,
       month: form.date.slice(0, 7),
       date: form.date,
       hours: Math.round(parsedHours * 10000) / 10000,
-      luce: parseInt(form.luce) || 0,
-      gas: parseInt(form.gas) || 0,
-      contratti_telco: parseInt(form.telco) || 0,
-      vas: parseInt(form.vas) || 0,
+      luce: aMano("luce"),
+      gas: aMano("gas"),
+      contratti_telco: aMano("telco"),
+      vas: aMano("vas"),
     };
     const { error } = editingId
       ? await supabase.from("entries").update(row).eq("id", editingId)
@@ -419,14 +556,18 @@ function MainApp({ session }) {
       return;
     }
     closeForm();
-    load(key);
+    load(key, true);
   }
 
-  async function removeEntry(id) {
-    if (!window.confirm("Eliminare questa giornata?")) return;
-    const { error } = await supabase.from("entries").delete().eq("id", id);
+  async function removeEntry(e) {
+    const conNote = totale(noteMese[e.date]) > 0;
+    const domanda = conNote
+      ? "Eliminare la giornata (ore e contratti aggiunti a mano)? I contratti delle note restano."
+      : "Eliminare questa giornata?";
+    if (!window.confirm(domanda)) return;
+    const { error } = await supabase.from("entries").delete().eq("id", e.id);
     if (error) { setErrorMsg("Eliminazione non riuscita: " + error.message); return; }
-    load(key);
+    load(key, true);
   }
 
   async function updateKoField(field, val) {
@@ -439,11 +580,13 @@ function MainApp({ session }) {
 
   // --- calcoli compensi ---
   const totalHours = entries.reduce((s, e) => s + Number(e.hours), 0);
+  const noteTot = vuoti();
+  Object.values(noteMese).forEach((n) => TIPI.forEach((k) => { noteTot[k] += n[k]; }));
   const gross = {
-    luce: entries.reduce((s, e) => s + Number(e.luce), 0),
-    gas: entries.reduce((s, e) => s + Number(e.gas), 0),
-    telco: entries.reduce((s, e) => s + Number(e.contratti_telco), 0),
-    vas: entries.reduce((s, e) => s + Number(e.vas), 0),
+    luce: entries.reduce((s, e) => s + Number(e.luce), 0) + noteTot.luce,
+    gas: entries.reduce((s, e) => s + Number(e.gas), 0) + noteTot.gas,
+    telco: entries.reduce((s, e) => s + Number(e.contratti_telco), 0) + noteTot.telco,
+    vas: entries.reduce((s, e) => s + Number(e.vas), 0) + noteTot.vas,
   };
   const totaleLordi = gross.luce + gross.gas + gross.telco;
 
@@ -481,6 +624,22 @@ function MainApp({ session }) {
   const nettoStimato = guadagnoTotale - contributiPrev - irpefNetta;
 
   const catKeys = ["luce", "gas", "telco", "vas"];
+  // solo per chi usa le note: avviso (non blocco) se esiste già una giornata nella stessa data
+  const doppione = collegato && !editingId && showForm ? entries.find((e) => e.date === form.date) : null;
+  const giorniLista = (() => {
+    const lista = [];
+    const visti = new Set();
+    for (const e of entries) {
+      const primo = !visti.has(e.date);
+      visti.add(e.date);
+      lista.push({ id: e.id, date: e.date, entry: e, note: primo ? noteMese[e.date] || null : null });
+    }
+    for (const d of Object.keys(noteMese)) {
+      if (!visti.has(d) && totale(noteMese[d]) > 0) lista.push({ id: "note-" + d, date: d, entry: null, note: noteMese[d] });
+    }
+    return lista.sort((a, b) => a.date.localeCompare(b.date));
+  })();
+  const quandoForm = form.date === oggiIso() ? "di oggi" : "del " + (form.date ? fmtDay(form.date) : "");
 
   return (
     <div className="app">
@@ -493,7 +652,14 @@ function MainApp({ session }) {
             </div>
             <div style={{ minWidth: 0 }}>
               <h1 className="uname">{displayName}</h1>
-              <button className="logout" onClick={() => supabase.auth.signOut()}>Esci</button>
+              {collegato ? (
+                <div className="sotto-nome">
+                  <button className="logout" onClick={() => supabase.auth.signOut()}>Esci</button>
+                  <a className="ponte" href={URL_NOTE} target="_blank" rel="noopener noreferrer">Note clienti ↗</a>
+                </div>
+              ) : (
+                <button className="logout" onClick={() => supabase.auth.signOut()}>Esci</button>
+              )}
             </div>
           </div>
           <div className="month">
@@ -510,6 +676,7 @@ function MainApp({ session }) {
         </div>
 
         {errorMsg && <div className="err">{errorMsg}</div>}
+        {noteErr && <div className="avviso">Contratti dalle note non caricati: i totali potrebbero essere più bassi. Riprova tra poco.</div>}
 
         {loading ? (
           <p className="muted">Caricamento…</p>
@@ -549,12 +716,12 @@ function MainApp({ session }) {
             </div>
 
             {showForm && (
-              <div className="card">
+              <div className="card" ref={formRef} style={{ scrollMarginTop: 12 }}>
                 <h2>{editingId ? "Modifica giornata" : "Nuova giornata"}</h2>
                 <div className="form-grid">
                   <div className="field">
                     <label>Data</label>
-                    <input className="inp" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                    <input className="inp" type="date" value={form.date} onChange={(e) => cambiaData(e.target.value)} />
                   </div>
                   <div className="field">
                     <label>Ore lavorate</label>
@@ -567,13 +734,23 @@ function MainApp({ session }) {
                     })()}
                   </div>
                 </div>
+                {doppione ? (
+                  <div className="from-notes dup">
+                    Il {fmtDay(form.date)} c'è già una giornata salvata. Per aggiungere ore o contratti a quel giorno, apri quella.
+                    <button type="button" className="btn-notes" onClick={() => startEdit(doppione)}>Apri quella</button>
+                  </div>
+                ) : noteForm && noteForm.date === form.date && totale(noteForm) > 0 ? (
+                  <div className="from-notes">
+                    Dalle note clienti {quandoForm}: <b>{testoNumeri(noteForm)}</b> ({noteForm.clienti} {noteForm.clienti === 1 ? "cliente" : "clienti"}). Sono già qui sotto: {editingId ? "controlla e salva." : "metti le ore e salva."}
+                  </div>
+                ) : null}
                 <div className="steps">
                   {catKeys.map((k) => (
                     <div key={k} className="step-row" style={{ background: CAT[k].bg }}>
-                      <span className="step-label"><Dot color={CAT[k].color} />{CAT[k].label}</span>
+                      <span className="step-label"><Dot color={CAT[k].color} /><span>{CAT[k].label}{dalleNote(k) > 0 && <small className="step-sub">{dalleNote(k)} dalle note</small>}</span></span>
                       <div className="stepper small">
-                        <button type="button" onClick={() => step(k, -1)} aria-label={"Meno " + CAT[k].label}>−</button>
-                        <input type="number" inputMode="numeric" min="0" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} style={{ color: CAT[k].color }} />
+                        <button type="button" onClick={() => step(k, -1)} disabled={dalleNote(k) > 0 && (parseInt(form[k]) || 0) <= dalleNote(k)} aria-label={"Meno " + CAT[k].label}>−</button>
+                        <input type="number" inputMode="numeric" min="0" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} onBlur={() => { if (dalleNote(k) > 0) setForm((f) => ({ ...f, [k]: String(Math.max(dalleNote(k), parseInt(f[k]) || 0)) })); }} style={{ color: CAT[k].color }} />
                         <button type="button" onClick={() => step(k, 1)} aria-label={"Più " + CAT[k].label} style={{ background: CAT[k].color, color: "#fff" }}>+</button>
                       </div>
                     </div>
@@ -588,27 +765,37 @@ function MainApp({ session }) {
               </div>
             )}
 
-            {entries.length === 0 ? (
+            {giorniLista.length === 0 ? (
               <p className="muted" style={{ textAlign: "center", padding: "16px 0" }}>Nessuna giornata registrata per questo mese.</p>
             ) : (
-              entries.map((e) => (
-                <div key={e.id} className="card">
-                  <div className="day-top">
-                    <span className="muted" style={{ fontSize: 15 }}>
-                      {fmtDay(e.date)}&nbsp;&nbsp;<span style={{ color: "#1E2433" }}><HoursText value={e.hours} /></span>
-                    </span>
-                    <div className="acts">
-                      <button className="btn-ghost" onClick={() => startEdit(e)}>Modifica</button>
-                      <button className="btn-danger" onClick={() => removeEntry(e.id)}>Elimina</button>
+              giorniLista.map(({ id, date, entry: e, note: n }) => {
+                const val = (cat) => (e ? Number(e[COL[cat]]) || 0 : 0) + (n ? n[cat] : 0);
+                return (
+                  <div key={id} className={"card" + (e ? "" : " card-attesa")}>
+                    <div className="day-top">
+                      <span className="muted" style={{ fontSize: 15 }}>
+                        {fmtDay(date)}&nbsp;&nbsp;{e ? <span style={{ color: "#1E2433" }}><HoursText value={e.hours} /></span> : <span className="ore-mancanti">Ore da inserire</span>}
+                      </span>
+                      <div className="acts">
+                        {e ? (
+                          <>
+                            <button className="btn-ghost" onClick={() => startEdit(e)}>Modifica</button>
+                            <button className="btn-danger" onClick={() => removeEntry(e)}>Elimina</button>
+                          </>
+                        ) : (
+                          <button className="btn-primary btn-piccolo" onClick={() => apriGiorno(date, true)}>Metti le ore</button>
+                        )}
+                      </div>
                     </div>
+                    <div className="chips">
+                      {catKeys.map((cat) => (
+                        <span key={cat} className="chip" style={{ background: CAT[cat].bg, color: CAT[cat].color }}>{CAT[cat].short} {val(cat)}</span>
+                      ))}
+                    </div>
+                    {n && totale(n) > 0 && <div className="dalle-note">Dalle note clienti: {testoNumeri(n)}</div>}
                   </div>
-                  <div className="chips">
-                    {[["luce", e.luce], ["gas", e.gas], ["telco", e.contratti_telco], ["vas", e.vas]].map(([k, v]) => (
-                      <span key={k} className="chip" style={{ background: CAT[k].bg, color: CAT[k].color }}>{CAT[k].short} {v}</span>
-                    ))}
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         ) : tab === "finemese" ? (
