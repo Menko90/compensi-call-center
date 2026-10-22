@@ -137,21 +137,6 @@ function fmtDay(d) {
 }
 const emptyForm = { date: "", hours: "", luce: "", gas: "", telco: "", vas: "" };
 
-// --- piani provvigioni: ogni mese usa l'ultimo piano partito in quel mese o prima ---
-// gettoni = importi Luce/Gas per resa >= 0,70 / >= 0,60 / >= 0,50 (sotto 0,50: 0 €)
-const PIANI = [
-  { da: "2000-01", gettoni: [20, 15, 5], telco: 10, vas: 2, nota: "" },
-  { da: "2026-10", gettoni: [10, 7.5, 2.5], telco: 10, vas: 1, nota: "Da ottobre 2026 le provvigioni sono pagate al 50%: gettone 10 / 7,50 / 2,50 €, VAS 1 €. Telco invariato a 10 € finché non viene comunicato diversamente." },
-];
-function pianoDelMese(k) {
-  let p = PIANI[0];
-  for (const x of PIANI) if (k >= x.da) p = x;
-  return p;
-}
-function fmtGettone(n) {
-  return fmtNum(n, n % 1 ? 2 : 0) + " €";
-}
-
 // --- contratti che arrivano dal blocco note clienti (solo numeri: giorno e quantità) ---
 const URL_NOTE = "https://note-clienti.vercel.app";
 const TIPI = ["luce", "gas", "telco", "vas"];
@@ -398,6 +383,7 @@ function MainApp({ session }) {
   const [noteMese, setNoteMese] = useState({}); // contratti dalle note, giorno per giorno
   const [noteErr, setNoteErr] = useState(false);
   const [noteForm, setNoteForm] = useState(null); // contratti dalle note per la data del modulo
+  const [sitoNote, setSitoNote] = useState(URL_NOTE); // il blocco note di questo operatore (ognuno ha il suo)
   const formRef = useRef(null);
 
   const key = monthKey(refDate);
@@ -425,6 +411,11 @@ function MainApp({ session }) {
     const conNote = !r4.error && !!r4.data;
     setCollegato(conNote);
     if (conNote) {
+      // il blocco note lo registra lui quando si collega; se non c'è si va a quello di sempre
+      supabase.auth.getUser().then(({ data }) => {
+        const sito = data?.user?.user_metadata?.sito_note;
+        if (typeof sito === "string" && /^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)/.test(sito)) setSitoNote(sito);
+      }).catch(() => {});
       const r3 = await supabase.from("contratti_note").select("data, cliente_id, n_luce, n_gas, n_telco, n_vas").eq("conta", true).gte("data", `${k}-01`).lt("data", meseDopo(k));
       // se non si caricano, l'app funziona con i numeri scritti a mano e lo segnala
       setNoteMese(r3.error ? {} : raggruppaNote(r3.data || []));
@@ -609,11 +600,10 @@ function MainApp({ session }) {
   const totaleLordi = gross.luce + gross.gas + gross.telco;
 
   const resa = totalHours > 0 ? totaleLordi / totalHours : 0;
-  const piano = pianoDelMese(key);
   let gettone = 0;
-  if (resa >= 0.7) gettone = piano.gettoni[0];
-  else if (resa >= 0.6) gettone = piano.gettoni[1];
-  else if (resa >= 0.5) gettone = piano.gettoni[2];
+  if (resa >= 0.7) gettone = 20;
+  else if (resa >= 0.6) gettone = 15;
+  else if (resa >= 0.5) gettone = 5;
 
   const koTot = {
     luce: ko.ko_luce + ko.ko_vas_luce,
@@ -630,8 +620,8 @@ function MainApp({ session }) {
 
   const pagaBase = totalHours * 8.5;
   const provvLuceGas = (netti.luce + netti.gas) * gettone;
-  const provvTelco = netti.telco * piano.telco;
-  const provvVas = netti.vas * piano.vas;
+  const provvTelco = netti.telco * 10;
+  const provvVas = netti.vas * 2;
   const guadagnoTotale = pagaBase + provvLuceGas + provvTelco + provvVas;
 
   // --- netto stimato co.co.co. ---
@@ -644,8 +634,8 @@ function MainApp({ session }) {
 
   const catKeys = ["luce", "gas", "telco", "vas"];
   // compenso lordo stimato di una giornata, con le stesse regole del Riepilogo:
-  // ore × 8,50 € + (luce + gas) × gettone attuale del mese + telco e VAS con gli importi del piano del mese. I KO si tolgono a fine mese.
-  const compensoGiorno = (ore, n) => ore * 8.5 + (n.luce + n.gas) * gettone + n.telco * piano.telco + n.vas * piano.vas;
+  // ore × 8,50 € + (luce + gas) × gettone attuale del mese + telco × 10 € + VAS × 2 €. I KO si tolgono a fine mese.
+  const compensoGiorno = (ore, n) => ore * 8.5 + (n.luce + n.gas) * gettone + n.telco * 10 + n.vas * 2;
   // netto stimato del giorno: la sua parte del netto del mese (contributi e IRPEF si calcolano sul mese intero)
   const quotaNetto = guadagnoTotale > 0 ? nettoStimato / guadagnoTotale : 1 - 0.118;
   // solo per chi usa le note: avviso (non blocco) se esiste già una giornata nella stessa data
@@ -679,7 +669,7 @@ function MainApp({ session }) {
               {collegato ? (
                 <div className="sotto-nome">
                   <button className="logout" onClick={() => supabase.auth.signOut()}>Esci</button>
-                  <a className="ponte" href={URL_NOTE} target="_blank" rel="noopener noreferrer">Note clienti ↗</a>
+                  <a className="ponte" href={sitoNote} target="_blank" rel="noopener noreferrer">Note clienti ↗</a>
                 </div>
               ) : (
                 <button className="logout" onClick={() => supabase.auth.signOut()}>Esci</button>
@@ -740,7 +730,7 @@ function MainApp({ session }) {
             </div>
             {giorniLista.length > 0 && (
               <p className="muted nota-compenso">
-                Compenso del giorno stimato: gettone attuale del mese ({fmtGettone(gettone)}), netto in proporzione al mese. I KO si tolgono a fine mese.
+                Compenso del giorno stimato: gettone attuale del mese ({gettone} €), netto in proporzione al mese. I KO si tolgono a fine mese.
               </p>
             )}
 
@@ -870,7 +860,7 @@ function MainApp({ session }) {
             <div className="grid3">
               <div className="card"><div className="stat-label">Ore totali</div><div className="stat-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div></div>
               <div className="card"><div className="stat-label">Resa oraria</div><div className="stat-val">{fmtNum(resa * 100, 1)}%</div></div>
-              <div className="card"><div className="stat-label">Gettone</div><div className="stat-val">{fmtNum(gettone, gettone % 1 ? 2 : 0)}€</div></div>
+              <div className="card"><div className="stat-label">Gettone</div><div className="stat-val">{gettone}€</div></div>
             </div>
 
             <div className="card">
@@ -897,7 +887,6 @@ function MainApp({ session }) {
               <div className="line"><span>Provvigioni Luce + Gas</span><span>{fmtEuro(provvLuceGas)}</span></div>
               <div className="line"><span>Provvigioni Telco</span><span>{fmtEuro(provvTelco)}</span></div>
               <div className="line"><span>Provvigioni VAS</span><span>{fmtEuro(provvVas)}</span></div>
-              {piano.nota && <p className="note">{piano.nota}</p>}
             </div>
 
             <div className="dark dark-1">
