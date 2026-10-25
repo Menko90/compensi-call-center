@@ -84,6 +84,12 @@ body { margin: 0; }
 .bg-bott button { flex: 1; border: 0; border-radius: 12px; padding: 12px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
 .bg-mod { background: #2563EB; color: #fff; }
 .bg-el { background: #FCE0E5; color: #E11D48; }
+.rias-gira { border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; padding: 0; }
+.rias-gira .stat-label { white-space: nowrap; gap: 4px; justify-content: flex-start; }
+.rias-scambio { color: #2563EB; font-size: 13px; font-weight: 700; margin-left: auto; }
+.rias-gira.girata { background: #E4F5EA; border-radius: 12px; padding: 6px 8px; margin: -6px -8px; }
+.rias-gira.girata .stat-label { color: #047857; }
+.rias-gira.girata .rias-val { color: #065F46; }
 .rias-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; margin-top: 3px; white-space: nowrap; color: #1E2433; }
 .rias-sec { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E3E6EC; }
 .rias-val small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
@@ -433,6 +439,7 @@ export default function App() {
 function MainApp({ session }) {
   const [refDate, setRefDate] = useState(new Date());
   const [tab, setTab] = useState("giorni");
+  const [nettoOra, setNettoOra] = useState(false); // riquadro in basso: Netto/giorno oppure Netto/ora
   const [selGiorno, setSelGiorno] = useState(null); // giorno selezionato nell'elenco (barra Modifica/Elimina)
   const [infoCompenso, setInfoCompenso] = useState(false); // spiegazione del compenso del giorno: chiusa di default
   const [showFiscali, setShowFiscali] = useState(false);
@@ -735,6 +742,8 @@ function MainApp({ session }) {
   const mediaOre = giorniConOre > 0 ? totalHours / giorniConOre : 0;
   // netto medio al giorno: netto stimato del mese diviso i giorni lavorati
   const nettoMedioGiorno = giorniLavorati > 0 ? nettoStimato / giorniLavorati : 0;
+  // netto all'ora: netto stimato del mese diviso le ore totali
+  const nettoMedioOra = totalHours > 0 ? nettoStimato / totalHours : 0;
   const quandoForm = form.date === oggiIso() ? "di oggi" : "del " + (form.date ? fmtDay(form.date) : "");
 
   return (
@@ -812,10 +821,15 @@ function MainApp({ session }) {
                   <div className="stat-label">Media ore</div>
                   <div className="rias-val">{splitHM(mediaOre).h}<small>h</small>{splitHM(mediaOre).m ? <> {splitHM(mediaOre).m}<small>m</small></> : null}</div>
                 </div>
-                <div className="rias-cella">
-                  <div className="stat-label">Netto/giorno</div>
-                  <div className="rias-val">{fmtEuro(nettoMedioGiorno)}</div>
-                </div>
+                <button
+                  type="button"
+                  className={"rias-cella rias-gira" + (nettoOra ? " girata" : "")}
+                  onClick={() => setNettoOra((v) => !v)}
+                  aria-label={nettoOra ? "Netto all'ora: tocca per vedere il netto al giorno" : "Netto al giorno: tocca per vedere il netto all'ora"}
+                >
+                  <div className="stat-label">{nettoOra ? "Netto/ora" : "Netto/giorno"}<span className="rias-scambio" aria-hidden="true">⇄</span></div>
+                  <div className="rias-val">{fmtEuro(nettoOra ? nettoMedioOra : nettoMedioGiorno)}</div>
+                </button>
               </div>
             </div>
 
