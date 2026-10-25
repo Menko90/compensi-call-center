@@ -22,19 +22,19 @@ body { margin: 0; }
     #EDF1F9; }
 .wrap { max-width: 520px; margin: 0 auto; }
 .disp { font-family: 'Space Grotesk', sans-serif; }
-.header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.logo { width: 48px; height: 48px; border-radius: 50%; background: #2563EB; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; box-shadow: 0 8px 20px rgba(37,99,235,.35); flex-shrink: 0; }
-.brand h1 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; }
+.logo { width: 38px; height: 38px; border-radius: 50%; background: #2563EB; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px; box-shadow: 0 4px 12px rgba(37,99,235,.3); flex-shrink: 0; }
+.brand h1 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.15; }
 .logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
 .uname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; text-transform: capitalize; }
 .brand p { margin: 0; font-size: 12px; color: #6B7280; }
 .logout { background: none; border: none; padding: 0; font-size: 12px; color: #2563EB; text-decoration: underline; cursor: pointer; font-family: inherit; }
-.month { display: flex; align-items: center; background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.95); border-radius: 999px; padding: 8px 6px; box-shadow: 0 4px 16px rgba(30,36,51,.06); }
-.month span { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; text-align: center; min-width: 92px; line-height: 1.2; }
+.month { display: flex; align-items: center; background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.95); border-radius: 999px; padding: 5px 4px; box-shadow: 0 4px 16px rgba(30,36,51,.06); }
+.month span { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; text-align: center; white-space: nowrap; line-height: 1.2; }
 .month button { background: none; border: none; font-size: 22px; color: #374151; padding: 0 8px; cursor: pointer; }
-.tabs { display: flex; background: rgba(255,255,255,.45); border-radius: 999px; padding: 5px; margin-bottom: 18px; }
-.tabs button { flex: 1; border: none; background: none; padding: 10px 0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #6B7280; cursor: pointer; font-family: inherit; }
+.tabs { display: flex; background: rgba(255,255,255,.45); border-radius: 999px; padding: 4px; margin-bottom: 12px; }
+.tabs button { flex: 1; border: none; background: none; padding: 8px 0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #6B7280; cursor: pointer; font-family: inherit; }
 .tabs button.on { background: #fff; color: #111827; font-weight: 600; box-shadow: 0 4px 12px rgba(30,36,51,.08); }
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .card { background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.95); border-radius: 24px; padding: 18px; box-shadow: 0 6px 24px rgba(30,36,51,.05); }
@@ -64,6 +64,26 @@ body { margin: 0; }
 .rias-cat-voce { background: #fff; border-radius: 10px; padding: 5px 8px; display: flex; flex-direction: column; gap: 1px; }
 .rias-cat-nome { font-size: 11px; color: #6B7280; display: flex; align-items: center; gap: 5px; }
 .rias-cat-voce b { font-family: 'Space Grotesk', sans-serif; font-size: 17px; line-height: 1.1; }
+.btn-info { background: none; border: 0; color: #2563EB; font-size: 18px; line-height: 1; padding: 0 0 0 8px; cursor: pointer; vertical-align: middle; }
+.tg { background: #F2F6FD; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(30,60,120,.08); }
+.tg-testa, .tg-riga { display: grid; grid-template-columns: 52px 50px 1fr 74px; gap: 4px; align-items: center; padding: 8px 12px; font-size: 13px; }
+.tg-testa { font-size: 10.5px; color: #6B7280; background: #E8EEFA; }
+.tg-dx { text-align: right; }
+.tg-riga { width: 100%; min-height: 54px; border: 0; border-top: 1px solid #E3E8F1; background: none; font-family: inherit; color: #1E2433; text-align: left; cursor: pointer; }
+.tg-riga b { font-size: 13px; text-transform: capitalize; }
+.tg-riga em { font-style: normal; font-weight: 700; color: #16A34A; font-size: 13px; }
+.tg-riga.sel { background: #DCE8FD; box-shadow: inset 3px 0 0 #2563EB; }
+.tg-riga.attesa { background: #FFF7E8; }
+.tg-manca { font-size: 10.5px; line-height: 1.15; }
+.tg-mini { display: flex; gap: 3px; }
+.tg-mini span { border-radius: 6px; padding: 2px 6px; font-size: 11.5px; font-weight: 700; }
+.tg-nota { margin: 0; text-align: center; font-size: 11.5px; color: #6B7280; }
+.barra-giorno { position: sticky; bottom: 10px; z-index: 5; background: #fff; border-radius: 16px; padding: 10px 12px; box-shadow: 0 -2px 14px rgba(30,60,120,.22); font-size: 13px; }
+.bg-sub { font-size: 11.5px; color: #6B7280; margin-top: 2px; }
+.bg-bott { display: flex; gap: 10px; margin-top: 10px; }
+.bg-bott button { flex: 1; border: 0; border-radius: 12px; padding: 12px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.bg-mod { background: #2563EB; color: #fff; }
+.bg-el { background: #FCE0E5; color: #E11D48; }
 .rias-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; margin-top: 3px; white-space: nowrap; color: #1E2433; }
 .rias-sec { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E3E6EC; }
 .rias-val small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
@@ -413,6 +433,8 @@ export default function App() {
 function MainApp({ session }) {
   const [refDate, setRefDate] = useState(new Date());
   const [tab, setTab] = useState("giorni");
+  const [selGiorno, setSelGiorno] = useState(null); // giorno selezionato nell'elenco (barra Modifica/Elimina)
+  const [infoCompenso, setInfoCompenso] = useState(false); // spiegazione del compenso del giorno: chiusa di default
   const [showFiscali, setShowFiscali] = useState(false);
   const [entries, setEntries] = useState([]);
   const [ko, setKo] = useState(emptyKo());
@@ -697,6 +719,15 @@ function MainApp({ session }) {
     // i più recenti in alto
     return lista.sort((a, b) => b.date.localeCompare(a.date));
   })();
+  // dati di una riga dell'elenco giorni
+  const infoGiorno = ({ entry: e, note: n }) => {
+    const val = (cat) => (e ? Number(e[COL[cat]]) || 0 : 0) + (n ? n[cat] : 0);
+    const lordo = compensoGiorno(e ? Number(e.hours) || 0 : 0, { luce: val("luce"), gas: val("gas"), telco: val("telco"), vas: val("vas") });
+    return { val, lordo, netto: lordo * quotaNetto };
+  };
+  const oreCorte = (v) => { const { h, m } = splitHM(v); return `${h}h${String(m).padStart(2, "0")}`; };
+  const giornoCorto = (d) => new Date(d + "T00:00:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric" });
+  const selezionato = giorniLista.find((g) => g.id === selGiorno) || null;
   // giorni lavorati: ogni data della lista (anche quelle con i soli contratti dalle note, senza ore)
   const giorniLavorati = new Set(giorniLista.map((g) => g.date)).size;
   // media ore: sui giorni in cui le ore sono state inserite
@@ -729,7 +760,7 @@ function MainApp({ session }) {
           </div>
           <div className="month">
             <button onClick={() => changeMonth(-1)} aria-label="Mese precedente">‹</button>
-            <span>{MESI[refDate.getMonth()]}<br />{refDate.getFullYear()}</span>
+            <span>{MESI[refDate.getMonth()]} {refDate.getFullYear()}</span>
             <button onClick={() => changeMonth(1)} aria-label="Mese successivo">›</button>
           </div>
         </div>
@@ -778,7 +809,7 @@ function MainApp({ session }) {
                   <div className="rias-val">{giorniLavorati}</div>
                 </div>
                 <div className="rias-cella">
-                  <div className="stat-label">Media ore/giorno</div>
+                  <div className="stat-label">Media ore</div>
                   <div className="rias-val">{splitHM(mediaOre).h}<small>h</small>{splitHM(mediaOre).m ? <> {splitHM(mediaOre).m}<small>m</small></> : null}</div>
                 </div>
                 <div className="rias-cella">
@@ -789,10 +820,15 @@ function MainApp({ session }) {
             </div>
 
             <div className="sec-head">
-              <h2>Giornate</h2>
+              <h2>
+                Giornate
+                {giorniLista.length > 0 && (
+                  <button type="button" className="btn-info" onClick={() => setInfoCompenso((v) => !v)} aria-expanded={infoCompenso} aria-label="Come è calcolato il compenso del giorno">ⓘ</button>
+                )}
+              </h2>
               {!showForm && <button className="btn-primary" onClick={openNew}>+ Aggiungi</button>}
             </div>
-            {giorniLista.length > 0 && (
+            {giorniLista.length > 0 && infoCompenso && (
               <p className="muted nota-compenso">
                 Compenso del giorno stimato: gettone attuale del mese ({fmtGettone(gettone)}), netto in proporzione al mese. I KO si tolgono a fine mese.
               </p>
@@ -851,38 +887,59 @@ function MainApp({ session }) {
             {giorniLista.length === 0 ? (
               <p className="muted" style={{ textAlign: "center", padding: "16px 0" }}>Nessuna giornata registrata per questo mese.</p>
             ) : (
-              giorniLista.map(({ id, date, entry: e, note: n }) => {
-                const val = (cat) => (e ? Number(e[COL[cat]]) || 0 : 0) + (n ? n[cat] : 0);
-                return (
-                  <div key={id} className={"card" + (e ? "" : " card-attesa")}>
-                    <div className="day-top">
-                      <span className="muted" style={{ fontSize: 15 }}>
-                        {fmtDay(date)}&nbsp;&nbsp;{e ? <span style={{ color: "#1E2433" }}><HoursText value={e.hours} /></span> : <span className="ore-mancanti">Ore da inserire</span>}
-                      </span>
-                      <div className="acts">
+              <>
+                <div className="tg">
+                  <div className="tg-testa">
+                    <span>Giorno</span><span>Ore</span><span>L · G · T · V</span><span className="tg-dx">Netto</span>
+                  </div>
+                  {giorniLista.map((g) => {
+                    const { val, netto } = infoGiorno(g);
+                    const sel = selezionato && selezionato.id === g.id;
+                    return (
+                      <button
+                        type="button"
+                        key={g.id}
+                        className={"tg-riga" + (sel ? " sel" : "") + (g.entry ? "" : " attesa")}
+                        aria-pressed={!!sel}
+                        onClick={() => setSelGiorno(sel ? null : g.id)}
+                      >
+                        <b>{giornoCorto(g.date)}</b>
+                        {g.entry ? <span>{oreCorte(Number(g.entry.hours) || 0)}</span> : <span className="ore-mancanti tg-manca">da inserire</span>}
+                        <span className="tg-mini">
+                          {catKeys.map((cat) => (
+                            <span key={cat} style={{ background: CAT[cat].bg, color: CAT[cat].color }}>{val(cat)}</span>
+                          ))}
+                        </span>
+                        <em className="tg-dx">{fmtNum(netto, 2)} €</em>
+                      </button>
+                    );
+                  })}
+                </div>
+                {!selezionato && <p className="tg-nota">Tocca un giorno per modificarlo o eliminarlo</p>}
+                {selezionato && (() => {
+                  const { lordo, netto } = infoGiorno(selezionato);
+                  const e = selezionato.entry;
+                  const n = selezionato.note;
+                  return (
+                    <div className="barra-giorno" role="region" aria-label="Azioni sul giorno scelto">
+                      <div className="bg-testo">
+                        <b>{fmtDay(selezionato.date)}</b> · {e ? <HoursText value={e.hours} /> : <span className="ore-mancanti">ore da inserire</span>} · netto {fmtEuro(netto)}
+                        <div className="bg-sub">≈ {fmtEuro(lordo)} lordi{n && totale(n) > 0 ? <> · Dalle note clienti: {testoNumeri(n)}</> : null}</div>
+                      </div>
+                      <div className="bg-bott">
                         {e ? (
                           <>
-                            <button className="btn-ghost" onClick={() => startEdit(e)}>Modifica</button>
-                            <button className="btn-danger" onClick={() => removeEntry(e)}>Elimina</button>
+                            <button type="button" className="bg-mod" onClick={() => { setSelGiorno(null); startEdit(e); }}>Modifica</button>
+                            <button type="button" className="bg-el" onClick={() => removeEntry(e)}>Elimina</button>
                           </>
                         ) : (
-                          <button className="btn-primary btn-piccolo" onClick={() => apriGiorno(date, true)}>Metti le ore</button>
+                          <button type="button" className="bg-mod" onClick={() => { setSelGiorno(null); apriGiorno(selezionato.date, true); }}>Metti le ore</button>
                         )}
                       </div>
                     </div>
-                    <div className="chips">
-                      {catKeys.map((cat) => (
-                        <span key={cat} className="chip" style={{ background: CAT[cat].bg, color: CAT[cat].color }}>{CAT[cat].short} {val(cat)}</span>
-                      ))}
-                    </div>
-                    {(() => {
-                      const lordo = compensoGiorno(e ? Number(e.hours) || 0 : 0, { luce: val("luce"), gas: val("gas"), telco: val("telco"), vas: val("vas") });
-                      return <div className="compenso-giorno">≈ {fmtEuro(lordo)} · netto {fmtEuro(lordo * quotaNetto)}</div>;
-                    })()}
-                    {n && totale(n) > 0 && <div className="dalle-note">Dalle note clienti: {testoNumeri(n)}</div>}
-                  </div>
-                );
-              })
+                  );
+                })()}
+              </>
             )}
           </div>
         ) : tab === "finemese" ? (
