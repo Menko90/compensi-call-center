@@ -40,6 +40,33 @@ body { margin: 0; }
 .card { background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.95); border-radius: 24px; padding: 18px; box-shadow: 0 6px 24px rgba(30,36,51,.05); }
 .card h2 { margin: 0 0 4px; font-family: 'Space Grotesk', sans-serif; font-size: 18px; }
 .muted { color: #6B7280; font-size: 13px; }
+.riassunto { padding: 14px 16px; }
+.rias-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 8px; }
+.rias-cella .stat-label { font-size: 11.5px; line-height: 1.25; }
+.rias-top { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; }
+.rias-tessera { border-radius: 16px; padding: 11px 13px; }
+.rias-contratti { background: #E4E2F9; }
+.rias-resa { background: #DCE8FD; }
+.rias-contratti .rias-lab { color: #4F46E5; }
+.rias-resa .rias-lab { color: #2563EB; }
+.rias-lab { font-size: 11.5px; font-weight: 600; line-height: 1.25; }
+.rias-grande { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 31px; margin-top: 3px; white-space: nowrap; }
+.rias-grande small { font-size: 14px; color: #9CA3AF; font-weight: 500; margin-left: 3px; }
+.rias-contratti .rias-grande { color: #4338CA; }
+.rias-resa .rias-grande { color: #1D4ED8; }
+.rias-destra { display: flex; flex-direction: column; gap: 10px; }
+.rias-resa, .rias-ore { flex: 1; }
+.rias-ore { background: #E6EAF1; }
+.rias-ore .rias-lab { color: #475569; }
+.rias-medio { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 21px; margin-top: 4px; white-space: nowrap; color: #1E293B; }
+.rias-medio small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
+.rias-cat { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.rias-cat-voce { background: #fff; border-radius: 10px; padding: 5px 8px; display: flex; flex-direction: column; gap: 1px; }
+.rias-cat-nome { font-size: 11px; color: #6B7280; display: flex; align-items: center; gap: 5px; }
+.rias-cat-voce b { font-family: 'Space Grotesk', sans-serif; font-size: 17px; line-height: 1.1; }
+.rias-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; margin-top: 3px; white-space: nowrap; color: #1E2433; }
+.rias-sec { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E3E6EC; }
+.rias-val small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .stat-label { font-size: 13px; color: #6B7280; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
@@ -720,44 +747,44 @@ function MainApp({ session }) {
           <p className="muted">Caricamento…</p>
         ) : tab === "giorni" ? (
           <div className="stack">
-            <div className="grid2">
-              <div className="card">
-                <div className="stat-label">Ore totali <Dot color="#9CA3AF" /></div>
-                <div className="stat-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>min</small></> : null}</div>
-              </div>
-              <div className="card">
-                <div className="stat-label">Resa oraria <Dot color="#2563EB" /></div>
-                <div className="stat-val">{fmtNum(resa, 2)}<small>/h</small></div>
-              </div>
-              <div className="card">
-                <div className="stat-label">Giorni lavorati</div>
-                <div className="stat-val">{giorniLavorati}</div>
-              </div>
-              <div className="card">
-                <div className="stat-label">Media ore al giorno</div>
-                <div className="stat-val">{splitHM(mediaOre).h}<small>h</small>{splitHM(mediaOre).m ? <> {splitHM(mediaOre).m}<small>min</small></> : null}</div>
-              </div>
-              <div className="card" style={{ gridColumn: "1 / -1" }}>
-                <div className="stat-label">Netto medio al giorno <Dot color="#16A34A" /></div>
-                <div className="stat-val">{fmtEuro(nettoMedioGiorno)}</div>
-                <div className="hint">Netto stimato del mese ÷ giorni lavorati (i KO si tolgono a fine mese)</div>
-              </div>
-            </div>
-
-            <div className="card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                <h2>Contratti lordi · mese</h2>
-                <span className="muted">Luce + Gas + Telco</span>
-              </div>
-              <div className="big">{totaleLordi}<small>contratti</small></div>
-              <div className="tiles">
-                {catKeys.map((k) => (
-                  <div key={k} className="tile" style={{ background: CAT[k].bg }}>
-                    <Dot color={CAT[k].color} />
-                    <div className="tl">{CAT[k].label}</div>
-                    <div className="tv" style={{ color: CAT[k].color }}>{gross[k]}</div>
+            <div className="card riassunto">
+              <div className="rias-top">
+                <div className="rias-tessera rias-contratti">
+                  <div className="rias-lab">Contratti lordi</div>
+                  <div className="rias-grande">{totaleLordi}</div>
+                  <div className="rias-cat">
+                    {catKeys.map((k) => (
+                      <div key={k} className="rias-cat-voce">
+                        <span className="rias-cat-nome"><Dot color={CAT[k].color} />{CAT[k].label}</span>
+                        <b style={{ color: CAT[k].color }}>{gross[k]}</b>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+                <div className="rias-destra">
+                  <div className="rias-tessera rias-resa">
+                    <div className="rias-lab">Resa oraria</div>
+                    <div className="rias-grande">{fmtNum(resa, 2)}<small>/h</small></div>
+                  </div>
+                  <div className="rias-tessera rias-ore">
+                    <div className="rias-lab">Ore totali</div>
+                    <div className="rias-medio">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="rias-grid rias-sec">
+                <div className="rias-cella">
+                  <div className="stat-label">Giorni lavorati</div>
+                  <div className="rias-val">{giorniLavorati}</div>
+                </div>
+                <div className="rias-cella">
+                  <div className="stat-label">Media ore/giorno</div>
+                  <div className="rias-val">{splitHM(mediaOre).h}<small>h</small>{splitHM(mediaOre).m ? <> {splitHM(mediaOre).m}<small>m</small></> : null}</div>
+                </div>
+                <div className="rias-cella">
+                  <div className="stat-label">Netto/giorno</div>
+                  <div className="rias-val">{fmtEuro(nettoMedioGiorno)}</div>
+                </div>
               </div>
             </div>
 
