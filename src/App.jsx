@@ -667,8 +667,16 @@ function MainApp({ session }) {
     for (const d of Object.keys(noteMese)) {
       if (!visti.has(d) && totale(noteMese[d]) > 0) lista.push({ id: "note-" + d, date: d, entry: null, note: noteMese[d] });
     }
-    return lista.sort((a, b) => a.date.localeCompare(b.date));
+    // i più recenti in alto
+    return lista.sort((a, b) => b.date.localeCompare(a.date));
   })();
+  // giorni lavorati: ogni data della lista (anche quelle con i soli contratti dalle note, senza ore)
+  const giorniLavorati = new Set(giorniLista.map((g) => g.date)).size;
+  // media ore: sui giorni in cui le ore sono state inserite
+  const giorniConOre = new Set(entries.filter((e) => Number(e.hours) > 0).map((e) => e.date)).size;
+  const mediaOre = giorniConOre > 0 ? totalHours / giorniConOre : 0;
+  // netto medio al giorno: netto stimato del mese diviso i giorni lavorati
+  const nettoMedioGiorno = giorniLavorati > 0 ? nettoStimato / giorniLavorati : 0;
   const quandoForm = form.date === oggiIso() ? "di oggi" : "del " + (form.date ? fmtDay(form.date) : "");
 
   return (
@@ -720,6 +728,19 @@ function MainApp({ session }) {
               <div className="card">
                 <div className="stat-label">Resa oraria <Dot color="#2563EB" /></div>
                 <div className="stat-val">{fmtNum(resa, 2)}<small>/h</small></div>
+              </div>
+              <div className="card">
+                <div className="stat-label">Giorni lavorati</div>
+                <div className="stat-val">{giorniLavorati}</div>
+              </div>
+              <div className="card">
+                <div className="stat-label">Media ore al giorno</div>
+                <div className="stat-val">{splitHM(mediaOre).h}<small>h</small>{splitHM(mediaOre).m ? <> {splitHM(mediaOre).m}<small>min</small></> : null}</div>
+              </div>
+              <div className="card" style={{ gridColumn: "1 / -1" }}>
+                <div className="stat-label">Netto medio al giorno <Dot color="#16A34A" /></div>
+                <div className="stat-val">{fmtEuro(nettoMedioGiorno)}</div>
+                <div className="hint">Netto stimato del mese ÷ giorni lavorati (i KO si tolgono a fine mese)</div>
               </div>
             </div>
 
