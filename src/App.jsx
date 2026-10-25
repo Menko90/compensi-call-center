@@ -84,12 +84,15 @@ body { margin: 0; }
 .bg-bott button { flex: 1; border: 0; border-radius: 12px; padding: 12px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
 .bg-mod { background: #2563EB; color: #fff; }
 .bg-el { background: #FCE0E5; color: #E11D48; }
-.rias-gira { border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; padding: 0; }
+.rias-gira { border: 0; background: transparent; border-radius: 12px; padding: 6px 8px; margin: -6px -8px; font-family: inherit; text-align: left; color: inherit; cursor: pointer; transition: none; animation: none; -webkit-tap-highlight-color: transparent; outline: none; }
+.rias-gira:focus-visible { box-shadow: 0 0 0 2px #2563EB; }
+.rias-gira * { transition: none; animation: none; }
 .rias-gira .stat-label { white-space: nowrap; gap: 4px; justify-content: flex-start; }
 .rias-scambio { color: #2563EB; font-size: 13px; font-weight: 700; margin-left: auto; }
-.rias-gira.girata { background: #E4F5EA; border-radius: 12px; padding: 6px 8px; margin: -6px -8px; }
+.rias-gira.girata { background: #E4F5EA; }
 .rias-gira.girata .stat-label { color: #047857; }
 .rias-gira.girata .rias-val { color: #065F46; }
+.rias-val { color: #065F46; }
 .rias-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; margin-top: 3px; white-space: nowrap; color: #1E2433; }
 .rias-sec { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E3E6EC; }
 .rias-val small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
