@@ -13,14 +13,15 @@ const CAT = {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap');
 * { box-sizing: border-box; }
-body { margin: 0; }
-.app { min-height: 100vh; font-family: 'Inter', sans-serif; color: #1E2433; padding: 20px 16px 48px;
+html, body { margin: 0; overscroll-behavior-x: none; }
+.app { min-height: 100vh; font-family: 'Inter', sans-serif; color: #1E2433; padding: 20px 16px 48px; position: relative; isolation: isolate;
   background:
     radial-gradient(circle at 0% 0%, #BFD3F7 0%, rgba(191,211,247,0) 45%),
     radial-gradient(circle at 100% 45%, #F2EADB 0%, rgba(242,234,219,0) 40%),
     radial-gradient(circle at 50% 95%, #D9DDF9 0%, rgba(217,221,249,0) 50%),
     #EDF1F9; }
-.wrap { max-width: 520px; margin: 0 auto; }
+.app::before { content: ""; position: fixed; inset: 0; z-index: -1; background: url(/sfondo.webp) center / cover no-repeat; pointer-events: none; }
+.wrap { max-width: 520px; margin: 0 auto; touch-action: pan-y pinch-zoom; }
 .disp { font-family: 'Space Grotesk', sans-serif; }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -174,6 +175,31 @@ body { margin: 0; }
 .avviso { background: #FFF6E5; color: #7A4A00; border-radius: 16px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
 .compenso-giorno { margin-top: 9px; font-size: 12.5px; color: #A3A9B5; }
 .nota-compenso { margin: -6px 0 0; font-size: 11.5px; line-height: 1.45; color: #A3A9B5; }
+
+/* ===== Stile "vetro" (Liquid Glass): pannelli trasparenti e sfocati sopra lo sfondo ===== */
+.card, .tg, .barra-giorno { background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 28px rgba(40,70,140,.18), inset 0 1px 0 rgba(255,255,255,.9); }
+.tabs, .month { background: rgba(255,255,255,.35); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); border: 1px solid rgba(255,255,255,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.9); }
+.tabs button { color: #1E3A5F; }
+.tabs button.on { background: rgba(255,255,255,.78); color: #111827; box-shadow: 0 2px 8px rgba(40,70,140,.15), inset 0 1px 0 #fff; }
+.brand h1, .sec-head h2 { color: #0F2244; }
+.logout { color: #1D4ED8; }
+.rias-tessera { border: 1px solid rgba(255,255,255,.6); }
+.rias-contratti { background: rgba(160,150,235,.30); }
+.rias-resa { background: rgba(110,160,255,.32); }
+.rias-ore { background: rgba(255,255,255,.35); }
+.rias-cat-voce { background: rgba(255,255,255,.65); }
+.rias-grande small, .rias-val small, .rias-medio small { color: #64748B; }
+.muted, .stat-label, .eyebrow, .line span:first-child { color: #475569; }
+.line { border-bottom-color: rgba(255,255,255,.6); }
+.tg-testa { background: rgba(255,255,255,.35); color: #334155; }
+.tg-riga { border-top: 1px solid rgba(255,255,255,.55); }
+.tg-riga.sel { background: rgba(120,170,255,.38); }
+.tg-riga.attesa { background: rgba(255,236,200,.55); }
+.rias-gira.girata { background: rgba(200,245,220,.7); }
+.btn-primary { border: 1px solid rgba(255,255,255,.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 6px 16px rgba(37,99,235,.3); }
+.bg-mod { box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
+.bg-el { background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.8); }
+@media (prefers-reduced-transparency: reduce) { .card, .tg, .barra-giorno, .tabs, .month { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.88); } }
 `;
 
 function monthKey(d) {
@@ -459,6 +485,29 @@ function MainApp({ session }) {
   const [noteForm, setNoteForm] = useState(null); // contratti dalle note per la data del modulo
   const [sitoNote, setSitoNote] = useState(URL_NOTE); // il blocco note di questo operatore (ognuno ha il suo)
   const formRef = useRef(null);
+  // swipe a destra / sinistra per passare da una schermata all'altra (Giorni · Fine mese · Riepilogo)
+  const tocco = useRef(null);
+  const SCHEDE = ["giorni", "finemese", "riepilogo"];
+  function inizioTocco(e) {
+    const t = e.touches[0];
+    // un solo dito, non dai bordi (lì c'è il gesto "indietro" del telefono), non su campi di testo
+    if (e.touches.length !== 1 || t.clientX < 24 || t.clientX > window.innerWidth - 24 || e.target.closest("input, textarea, select")) { tocco.current = null; return; }
+    tocco.current = { x: t.clientX, y: t.clientY, t: e.timeStamp };
+  }
+  function fineTocco(e) {
+    const s = tocco.current;
+    tocco.current = null;
+    if (!s || showForm) return; // con il modulo aperto niente swipe: non si perde quello che scrivi per sbaglio
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8 || e.timeStamp - s.t > 700) return;
+    const i = SCHEDE.indexOf(tab);
+    const j = dx < 0 ? i + 1 : i - 1;
+    if (j < 0 || j >= SCHEDE.length) return;
+    setTab(SCHEDE[j]);
+    setShowFiscali(false);
+    window.scrollTo(0, 0);
+  }
 
   const key = monthKey(refDate);
   const userId = session.user.id;
@@ -752,7 +801,7 @@ function MainApp({ session }) {
   return (
     <div className="app">
       <style>{CSS}</style>
-      <div className="wrap">
+      <div className="wrap" onTouchStart={inizioTocco} onTouchEnd={fineTocco}>
         <div className="header">
           <div className="brand">
             <div className="logo">
