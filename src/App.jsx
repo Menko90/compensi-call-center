@@ -177,7 +177,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .nota-compenso { margin: -6px 0 0; font-size: 11.5px; line-height: 1.45; color: #A3A9B5; }
 
 /* ===== Vetro scuro (Liquid Glass): pannelli blu trasparenti e sfocati sopra lo sfondo, testo bianco ===== */
-.card, .tg, .barra-giorno { background: linear-gradient(135deg, rgba(20,60,130,.42), rgba(20,60,130,.24)); -webkit-backdrop-filter: blur(16px) saturate(1.9); backdrop-filter: blur(16px) saturate(1.9); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4), 0 14px 34px rgba(5,25,70,.35); color: #fff; }
+.card, .tg, .barra-giorno { background: linear-gradient(135deg, rgba(25,70,145,.66), rgba(25,70,145,.52)); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4), 0 8px 18px rgba(5,25,70,.28); color: #fff; }
 .tabs, .month { background: linear-gradient(135deg, rgba(20,60,130,.42), rgba(20,60,130,.24)); -webkit-backdrop-filter: blur(14px) saturate(1.9); backdrop-filter: blur(14px) saturate(1.9); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4); }
 .month span, .month button, .tabs button { color: #fff; }
 .tabs button.on { background: rgba(255,255,255,.88); color: #0F2244; box-shadow: 0 2px 8px rgba(5,25,70,.25); }
@@ -224,23 +224,19 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .row .disp { background: rgba(255,255,255,.86); border-radius: 8px; text-align: center; padding: 1px 0; }
 .row .r:nth-child(3) { color: rgba(255,255,255,.7) !important; padding-right: 10px; }
 .dark { border: 1px solid rgba(255,255,255,.25); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.5), 0 14px 34px rgba(5,25,70,.35); }
-.dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.78), rgba(30,58,110,.62)); }
-.dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.72), rgba(14,24,50,.74)); }
+.dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.9), rgba(30,58,110,.85)); }
+.dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.88), rgba(14,24,50,.9)); }
 .dark .eyebrow { color: rgba(255,255,255,.8); }
 
 /* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
 .vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
 .pista { display: flex; gap: 32px; align-items: flex-start; transition: transform .4s cubic-bezier(.22,.8,.24,1); }
 .muove .pista { will-change: transform; }
-/* mentre le pagine scorrono: niente sfocatura né ombre grandi (sono la parte pesante), pannelli un po' più pieni per restare leggibili */
-.muove .card, .muove .tg, .muove .barra-giorno, .muove .dark { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(135deg, rgba(25,70,145,.78), rgba(25,70,145,.66)); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.6), inset -2px -2px 1px -1px rgba(255,255,255,.3); }
-.muove .dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.9), rgba(30,58,110,.85)); }
-.muove .dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.88), rgba(14,24,50,.9)); }
 .pag { flex: 0 0 100%; min-width: 0; }
 .pag.off { height: 0; overflow: hidden; visibility: hidden; }
 .muove .pag.off { height: auto; max-height: 78vh; visibility: visible; }
 @media (prefers-reduced-motion: reduce) { .pista { transition-duration: .01s; } }
-@media (prefers-reduced-transparency: reduce) { .card, .tg, .barra-giorno, .tabs, .month { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(15,40,95,.88); } }
+@media (prefers-reduced-transparency: reduce) { .card, .tg, .barra-giorno, .tabs, .month { background: rgba(15,40,95,.9); } }
 `;
 
 function monthKey(d) {
