@@ -209,6 +209,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .tg-riga em { color: #9DF2C0; }
 .ore-mancanti { color: #FFD08A; }
 .bg-sub { color: rgba(255,255,255,.78); }
+.barra-giorno { background: linear-gradient(135deg, rgba(18,50,110,.97), rgba(14,40,95,.97)); }
 .rias-gira.girata { background: rgba(120,230,170,.22); }
 .rias-gira.girata .stat-label { color: #C9F7DD; }
 .rias-gira.girata .rias-val { color: #fff; }
@@ -227,6 +228,12 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.9), rgba(30,58,110,.85)); }
 .dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.88), rgba(14,24,50,.9)); }
 .dark .eyebrow { color: rgba(255,255,255,.8); }
+/* ritocchi: intestazione compatta, riquadri centrati, lettere L G T V colorate */
+.rias-resa, .rias-ore { display: flex; flex-direction: column; justify-content: center; }
+.tg-testa .tg-mini span { min-width: 19px; text-align: center; padding: 1px 4px; font-size: 10.5px; }
+.sotto-nome { flex-wrap: nowrap; gap: 8px; }
+.ponte { font-size: 11.5px; padding: 3px 8px; }
+.month button { padding: 0 5px; }
 
 /* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
 .vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
@@ -578,6 +585,19 @@ function MainApp({ session }) {
     el.style.transform = traslaz(j);
     if (j !== idx) { setTab(SCHEDE[j]); setShowFiscali(false); }
   }
+
+  // quando scegli un giorno, se la sua riga finirebbe sotto la barra delle azioni, scorri quel tanto che basta
+  useEffect(() => {
+    if (!selGiorno) return;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => {
+      const riga = document.querySelector(".tg-riga.sel"), barra = document.querySelector(".barra-giorno");
+      if (!riga || !barra) return;
+      const r = riga.getBoundingClientRect(), limite = barra.getBoundingClientRect().top - 8;
+      if (r.bottom > limite) window.scrollBy({ top: r.bottom - limite, behavior: "smooth" });
+      else if (r.top < 8) window.scrollBy({ top: r.top - 8, behavior: "smooth" });
+    }));
+    return () => cancelAnimationFrame(id);
+  }, [selGiorno]);
 
   const key = monthKey(refDate);
   const userId = session.user.id;
@@ -1029,7 +1049,7 @@ function MainApp({ session }) {
               <>
                 <div className="tg">
                   <div className="tg-testa">
-                    <span>Giorno</span><span>Ore</span><span>L · G · T · V</span><span className="tg-dx">Netto</span>
+                    <span>Giorno</span><span>Ore</span><span className="tg-mini">{catKeys.map((k) => <span key={k} style={{ background: CAT[k].bg, color: CAT[k].color }}>{CAT[k].label[0]}</span>)}</span><span className="tg-dx">Netto</span>
                   </div>
                   {giorniLista.map((g) => {
                     const { val, netto } = infoGiorno(g);
