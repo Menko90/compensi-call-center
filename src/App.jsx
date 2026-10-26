@@ -20,7 +20,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
     radial-gradient(circle at 100% 45%, #F2EADB 0%, rgba(242,234,219,0) 40%),
     radial-gradient(circle at 50% 95%, #D9DDF9 0%, rgba(217,221,249,0) 50%),
     #EDF1F9; }
-.app::before { content: ""; position: fixed; inset: 0; z-index: -1; background: url(/sfondo.webp) center / cover no-repeat; pointer-events: none; }
+.app::before { content: ""; position: fixed; inset: 0; z-index: -1; background: url(/sfondo2.webp) center / cover no-repeat; pointer-events: none; }
 .wrap { max-width: 520px; margin: 0 auto; touch-action: pan-y pinch-zoom; }
 .disp { font-family: 'Space Grotesk', sans-serif; }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
@@ -176,59 +176,60 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .compenso-giorno { margin-top: 9px; font-size: 12.5px; color: #A3A9B5; }
 .nota-compenso { margin: -6px 0 0; font-size: 11.5px; line-height: 1.45; color: #A3A9B5; }
 
-/* ===== Vetro scuro (Liquid Glass): pannelli blu trasparenti e sfocati sopra lo sfondo, testo bianco ===== */
-.card, .tg, .barra-giorno { background: linear-gradient(135deg, rgba(25,70,145,.66), rgba(25,70,145,.52)); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4), 0 8px 18px rgba(5,25,70,.28); color: #fff; }
-.tabs, .month { background: linear-gradient(135deg, rgba(20,60,130,.42), rgba(20,60,130,.24)); -webkit-backdrop-filter: blur(14px) saturate(1.9); backdrop-filter: blur(14px) saturate(1.9); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4); }
-.month span, .month button, .tabs button { color: #fff; }
-.tabs button.on { background: rgba(255,255,255,.88); color: #0F2244; box-shadow: 0 2px 8px rgba(5,25,70,.25); }
-.brand h1, .sec-head h2, .logout { color: #fff; text-shadow: 0 1px 3px rgba(0,25,80,.6), 0 0 14px rgba(0,25,80,.45); }
-.logout { text-decoration-color: rgba(255,255,255,.7); }
-.sec-head h2 { background: linear-gradient(135deg, rgba(20,60,130,.5), rgba(20,60,130,.3)); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 5px 16px; text-shadow: none; }
-.rias-tessera { border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.35); }
-.rias-contratti { background: linear-gradient(140deg, rgba(150,130,255,.42), rgba(120,100,235,.2)); }
-.rias-resa { background: linear-gradient(140deg, rgba(80,150,255,.5), rgba(60,120,250,.2)); }
-.rias-ore { background: linear-gradient(140deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); }
-.rias-contratti .rias-lab, .rias-resa .rias-lab, .rias-ore .rias-lab, .rias-lab, .stat-label, .tg-testa { color: rgba(255,255,255,.88); }
-.rias-grande, .rias-medio, .rias-val, .rias-contratti .rias-grande, .rias-resa .rias-grande, .tg-riga, .tg-riga b, .bg-testo, .stat-val, .big { color: #fff; }
-.rias-grande small, .rias-val small, .rias-medio small, .stat-val small, .big small { color: rgba(255,255,255,.7); }
-.rias-cat-voce { background: rgba(255,255,255,.86); border-radius: 999px; padding: 5px 12px; }
+/* ===== Vetro chiaro (Liquid Glass): pannelli bianchi trasparenti sopra lo sfondo, testo scuro ===== */
+.card, .tg { background: linear-gradient(135deg, rgba(255,255,255,.58), rgba(255,255,255,.36)); border: 1px solid rgba(255,255,255,.9); box-shadow: inset 2px 2px 1px -1px #fff, inset -2px -2px 1px -1px rgba(255,255,255,.7), 0 8px 18px rgba(40,70,140,.16); color: #10264d; }
+.barra-giorno { background: #F8FAFF; border: 1px solid rgba(255,255,255,.95); box-shadow: inset 2px 2px 1px -1px #fff, 0 -4px 18px rgba(40,70,140,.28); color: #10264d; }
+.tabs, .month { background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6); border: 1px solid rgba(255,255,255,.9); box-shadow: inset 2px 2px 1px -1px #fff, 0 4px 14px rgba(40,70,140,.1); }
+.month span, .month button, .tabs button { color: #0F2244; }
+.tabs button.on { background: #fff; color: #0F2244; box-shadow: 0 2px 8px rgba(40,70,140,.18); }
+.brand h1 { color: #0F2244; }
+.logout { color: #1D4ED8; }
+.sec-head h2 { color: #0F2244; background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.9); border-radius: 999px; padding: 5px 16px; }
+.rias-tessera { border: 1px solid rgba(255,255,255,.75); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.9), inset -2px -2px 1px -1px rgba(255,255,255,.5); }
+.rias-contratti { background: linear-gradient(140deg, rgba(165,140,255,.62), rgba(140,115,250,.32)); }
+.rias-resa { background: linear-gradient(140deg, rgba(90,165,255,.6), rgba(70,140,255,.3)); }
+.rias-ore { background: linear-gradient(140deg, rgba(255,190,120,.5), rgba(255,170,110,.26)); }
+.rias-contratti .rias-lab { color: #2E1F8F; }
+.rias-resa .rias-lab { color: #0B3FA8; }
+.rias-ore .rias-lab { color: #8A3B00; }
+.rias-lab, .stat-label, .tg-testa { color: #334155; }
+.rias-grande, .rias-contratti .rias-grande, .rias-resa .rias-grande, .rias-medio, .rias-val, .tg-riga, .tg-riga b, .bg-testo, .stat-val, .big { color: #0F2244; }
+.rias-grande small, .rias-val small, .rias-medio small, .stat-val small, .big small { color: #64748B; }
+.rias-cat-voce { background: rgba(255,255,255,.9); border-radius: 999px; padding: 5px 12px; }
 .rias-cat-nome { color: #334155; }
-.rias-sec { border-top-color: rgba(255,255,255,.3); }
-.muted, .eyebrow, .tg-nota, .note, .hint, .step-sub, .dalle-note, .nota-compenso, .compenso-giorno { color: rgba(255,255,255,.82); }
-.tg-nota { text-shadow: 0 1px 6px rgba(0,25,80,.7); }
-.line span:first-child { color: rgba(255,255,255,.82); }
-.line, .row { border-bottom-color: rgba(255,255,255,.22); }
-.row.head { color: rgba(255,255,255,.75); }
-.field label { color: #fff; }
-.step-row .step-label { color: #1E2433; }
-.step-row .step-sub { color: #475569; }
-.tg-testa { background: rgba(255,255,255,.1); }
-.tg-riga { border-top: 1px solid rgba(255,255,255,.22); }
-.tg-riga.sel { background: rgba(120,170,255,.4); box-shadow: inset 3px 0 0 #fff; }
-.tg-riga.attesa { background: rgba(255,200,110,.18); }
-.tg-riga em { color: #9DF2C0; }
-.ore-mancanti { color: #FFD08A; }
-.bg-sub { color: rgba(255,255,255,.78); }
-.barra-giorno { background: linear-gradient(135deg, rgba(18,50,110,.97), rgba(14,40,95,.97)); }
-.rias-gira.girata { background: rgba(120,230,170,.22); }
-.rias-gira.girata .stat-label { color: #C9F7DD; }
-.rias-gira.girata .rias-val { color: #fff; }
-.rias-scambio { color: #BBD6FF; }
-.btn-info { color: #BBD6FF; }
-.btn-primary, .bg-mod { background: linear-gradient(145deg, rgba(90,150,255,.95), rgba(37,99,235,.9)); border: 1px solid rgba(255,255,255,.5); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.9), 0 6px 16px rgba(5,25,70,.3); }
-.btn-primary:disabled { background: rgba(255,255,255,.25); color: rgba(255,255,255,.7); box-shadow: none; }
+.rias-sec { border-top-color: rgba(30,60,120,.2); }
+.muted, .eyebrow, .note, .hint, .step-sub, .dalle-note { color: #475569; }
+.hint.bad { color: #E11D48; }
+.compenso-giorno, .nota-compenso { color: #64748B; }
+.tg-nota { color: #334155; }
+.line span:first-child { color: #475569; }
+.line, .row { border-bottom-color: rgba(30,60,120,.14); }
+.row.head { color: #475569; }
+.field label { color: #1E2A44; }
+.tg-testa { background: rgba(255,255,255,.4); }
+.tg-riga { border-top: 1px solid rgba(30,60,120,.14); }
+.tg-riga.sel { background: rgba(70,130,255,.22); box-shadow: inset 3px 0 0 #2563EB; }
+.tg-riga.attesa { background: rgba(255,214,150,.45); }
+.tg-riga em { color: #15803D; }
+.ore-mancanti { color: #B45309; }
+.bg-sub { color: #475569; }
+.rias-gira.girata { background: rgba(120,220,160,.3); }
+.rias-gira.girata .stat-label { color: #047857; }
+.rias-gira.girata .rias-val { color: #065F46; }
+.rias-scambio, .btn-info, .back { color: #2563EB; }
+.btn-primary, .bg-mod { background: linear-gradient(145deg, rgba(90,150,255,.95), rgba(37,99,235,.92)); border: 1px solid rgba(255,255,255,.6); color: #fff; box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.9), 0 6px 16px rgba(37,99,235,.28); }
+.btn-primary:disabled { background: rgba(120,140,180,.4); color: #fff; box-shadow: none; }
 .bg-bott button { border-radius: 999px; }
-.bg-el { background: rgba(255,255,255,.88); color: #E11D48; }
-.btn-ghost { background: rgba(255,255,255,.22); color: #fff; }
-.btn-danger { background: rgba(255,255,255,.88); }
-.back { color: #BBD6FF; }
-.row .disp { background: rgba(255,255,255,.86); border-radius: 8px; text-align: center; padding: 1px 0; }
-.row .r:nth-child(3) { color: rgba(255,255,255,.7) !important; padding-right: 10px; }
-.dark { border: 1px solid rgba(255,255,255,.25); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.5), 0 14px 34px rgba(5,25,70,.35); }
-.dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.9), rgba(30,58,110,.85)); }
-.dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.88), rgba(14,24,50,.9)); }
-.dark .eyebrow { color: rgba(255,255,255,.8); }
-/* ritocchi: intestazione compatta, riquadri centrati, lettere L G T V colorate */
+.bg-el { background: #fff; color: #E11D48; border: 1px solid rgba(225,29,72,.3); }
+.btn-ghost { background: rgba(255,255,255,.75); color: #334155; border: 1px solid rgba(255,255,255,.9); }
+.btn-danger { background: #fff; border: 1px solid rgba(225,29,72,.3); }
+.row .r:nth-child(3) { padding-right: 10px; }
+.dark { border: 1px solid rgba(255,255,255,.4); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.5), 0 10px 24px rgba(20,40,100,.3); }
+.dark-1 { background: linear-gradient(120deg, rgba(20,34,70,.92), rgba(35,70,130,.88)); }
+.dark-2 { background: linear-gradient(120deg, rgba(52,60,125,.9), rgba(20,34,70,.92)); }
+.dark .eyebrow { color: rgba(255,255,255,.82); }
+.dark .big { color: #fff; }
+/* ritocchi: riquadri centrati, lettere L G T V colorate, intestazione compatta */
 .rias-resa, .rias-ore { display: flex; flex-direction: column; justify-content: center; }
 .tg-testa .tg-mini span { min-width: 19px; text-align: center; padding: 1px 4px; font-size: 10.5px; }
 .sotto-nome { flex-wrap: nowrap; gap: 8px; }
@@ -243,7 +244,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .pag.off { height: 0; overflow: hidden; visibility: hidden; }
 .muove .pag.off { height: auto; max-height: 78vh; visibility: visible; }
 @media (prefers-reduced-motion: reduce) { .pista { transition-duration: .01s; } }
-@media (prefers-reduced-transparency: reduce) { .card, .tg, .barra-giorno, .tabs, .month { background: rgba(15,40,95,.9); } }
+@media (prefers-reduced-transparency: reduce) { .card, .tg, .tabs, .month { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.92); } }
 `;
 
 function monthKey(d) {
