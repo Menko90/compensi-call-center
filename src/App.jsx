@@ -232,6 +232,10 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
 .pista { display: flex; gap: 32px; align-items: flex-start; transition: transform .4s cubic-bezier(.22,.8,.24,1); }
 .muove .pista { will-change: transform; }
+/* mentre le pagine scorrono: niente sfocatura né ombre grandi (sono la parte pesante), pannelli un po' più pieni per restare leggibili */
+.muove .card, .muove .tg, .muove .barra-giorno, .muove .dark { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(135deg, rgba(25,70,145,.78), rgba(25,70,145,.66)); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.6), inset -2px -2px 1px -1px rgba(255,255,255,.3); }
+.muove .dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.9), rgba(30,58,110,.85)); }
+.muove .dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.88), rgba(14,24,50,.9)); }
 .pag { flex: 0 0 100%; min-width: 0; }
 .pag.off { height: 0; overflow: hidden; visibility: hidden; }
 .muove .pag.off { height: auto; max-height: 78vh; visibility: visible; }
