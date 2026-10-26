@@ -176,30 +176,67 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .compenso-giorno { margin-top: 9px; font-size: 12.5px; color: #A3A9B5; }
 .nota-compenso { margin: -6px 0 0; font-size: 11.5px; line-height: 1.45; color: #A3A9B5; }
 
-/* ===== Stile "vetro" (Liquid Glass): pannelli trasparenti e sfocati sopra lo sfondo ===== */
-.card, .tg, .barra-giorno { background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7); border: 1px solid rgba(255,255,255,.75); box-shadow: 0 8px 28px rgba(40,70,140,.18), inset 0 1px 0 rgba(255,255,255,.9); }
-.tabs, .month { background: rgba(255,255,255,.35); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); border: 1px solid rgba(255,255,255,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.9); }
-.tabs button { color: #1E3A5F; }
-.tabs button.on { background: rgba(255,255,255,.78); color: #111827; box-shadow: 0 2px 8px rgba(40,70,140,.15), inset 0 1px 0 #fff; }
-.brand h1, .sec-head h2 { color: #0F2244; }
-.logout { color: #1D4ED8; }
-.rias-tessera { border: 1px solid rgba(255,255,255,.6); }
-.rias-contratti { background: rgba(160,150,235,.30); }
-.rias-resa { background: rgba(110,160,255,.32); }
-.rias-ore { background: rgba(255,255,255,.35); }
-.rias-cat-voce { background: rgba(255,255,255,.65); }
-.rias-grande small, .rias-val small, .rias-medio small { color: #64748B; }
-.muted, .stat-label, .eyebrow, .line span:first-child { color: #475569; }
-.line { border-bottom-color: rgba(255,255,255,.6); }
-.tg-testa { background: rgba(255,255,255,.35); color: #334155; }
-.tg-riga { border-top: 1px solid rgba(255,255,255,.55); }
-.tg-riga.sel { background: rgba(120,170,255,.38); }
-.tg-riga.attesa { background: rgba(255,236,200,.55); }
-.rias-gira.girata { background: rgba(200,245,220,.7); }
-.btn-primary { border: 1px solid rgba(255,255,255,.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 6px 16px rgba(37,99,235,.3); }
-.bg-mod { box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
-.bg-el { background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.8); }
-@media (prefers-reduced-transparency: reduce) { .card, .tg, .barra-giorno, .tabs, .month { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.88); } }
+/* ===== Vetro scuro (Liquid Glass): pannelli blu trasparenti e sfocati sopra lo sfondo, testo bianco ===== */
+.card, .tg, .barra-giorno { background: linear-gradient(135deg, rgba(20,60,130,.42), rgba(20,60,130,.24)); -webkit-backdrop-filter: blur(16px) saturate(1.9); backdrop-filter: blur(16px) saturate(1.9); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4), 0 14px 34px rgba(5,25,70,.35); color: #fff; }
+.tabs, .month { background: linear-gradient(135deg, rgba(20,60,130,.42), rgba(20,60,130,.24)); -webkit-backdrop-filter: blur(14px) saturate(1.9); backdrop-filter: blur(14px) saturate(1.9); border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.4); }
+.month span, .month button, .tabs button { color: #fff; }
+.tabs button.on { background: rgba(255,255,255,.88); color: #0F2244; box-shadow: 0 2px 8px rgba(5,25,70,.25); }
+.brand h1, .sec-head h2, .logout { color: #fff; text-shadow: 0 1px 3px rgba(0,25,80,.6), 0 0 14px rgba(0,25,80,.45); }
+.logout { text-decoration-color: rgba(255,255,255,.7); }
+.sec-head h2 { background: linear-gradient(135deg, rgba(20,60,130,.5), rgba(20,60,130,.3)); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 5px 16px; text-shadow: none; }
+.rias-tessera { border: 1px solid rgba(255,255,255,.3); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.7), inset -2px -2px 1px -1px rgba(255,255,255,.35); }
+.rias-contratti { background: linear-gradient(140deg, rgba(150,130,255,.42), rgba(120,100,235,.2)); }
+.rias-resa { background: linear-gradient(140deg, rgba(80,150,255,.5), rgba(60,120,250,.2)); }
+.rias-ore { background: linear-gradient(140deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); }
+.rias-contratti .rias-lab, .rias-resa .rias-lab, .rias-ore .rias-lab, .rias-lab, .stat-label, .tg-testa { color: rgba(255,255,255,.88); }
+.rias-grande, .rias-medio, .rias-val, .rias-contratti .rias-grande, .rias-resa .rias-grande, .tg-riga, .tg-riga b, .bg-testo, .stat-val, .big { color: #fff; }
+.rias-grande small, .rias-val small, .rias-medio small, .stat-val small, .big small { color: rgba(255,255,255,.7); }
+.rias-cat-voce { background: rgba(255,255,255,.86); border-radius: 999px; padding: 5px 12px; }
+.rias-cat-nome { color: #334155; }
+.rias-sec { border-top-color: rgba(255,255,255,.3); }
+.muted, .eyebrow, .tg-nota, .note, .hint, .step-sub, .dalle-note, .nota-compenso, .compenso-giorno { color: rgba(255,255,255,.82); }
+.tg-nota { text-shadow: 0 1px 6px rgba(0,25,80,.7); }
+.line span:first-child { color: rgba(255,255,255,.82); }
+.line, .row { border-bottom-color: rgba(255,255,255,.22); }
+.row.head { color: rgba(255,255,255,.75); }
+.field label { color: #fff; }
+.step-row .step-label { color: #1E2433; }
+.step-row .step-sub { color: #475569; }
+.tg-testa { background: rgba(255,255,255,.1); }
+.tg-riga { border-top: 1px solid rgba(255,255,255,.22); }
+.tg-riga.sel { background: rgba(120,170,255,.4); box-shadow: inset 3px 0 0 #fff; }
+.tg-riga.attesa { background: rgba(255,200,110,.18); }
+.tg-riga em { color: #9DF2C0; }
+.ore-mancanti { color: #FFD08A; }
+.bg-sub { color: rgba(255,255,255,.78); }
+.rias-gira.girata { background: rgba(120,230,170,.22); }
+.rias-gira.girata .stat-label { color: #C9F7DD; }
+.rias-gira.girata .rias-val { color: #fff; }
+.rias-scambio { color: #BBD6FF; }
+.btn-info { color: #BBD6FF; }
+.btn-primary, .bg-mod { background: linear-gradient(145deg, rgba(90,150,255,.95), rgba(37,99,235,.9)); border: 1px solid rgba(255,255,255,.5); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.9), 0 6px 16px rgba(5,25,70,.3); }
+.btn-primary:disabled { background: rgba(255,255,255,.25); color: rgba(255,255,255,.7); box-shadow: none; }
+.bg-bott button { border-radius: 999px; }
+.bg-el { background: rgba(255,255,255,.88); color: #E11D48; }
+.btn-ghost { background: rgba(255,255,255,.22); color: #fff; }
+.btn-danger { background: rgba(255,255,255,.88); }
+.back { color: #BBD6FF; }
+.row .disp { background: rgba(255,255,255,.86); border-radius: 8px; text-align: center; padding: 1px 0; }
+.row .r:nth-child(3) { color: rgba(255,255,255,.7) !important; padding-right: 10px; }
+.dark { border: 1px solid rgba(255,255,255,.25); box-shadow: inset 2px 2px 1px -1px rgba(255,255,255,.5), 0 14px 34px rgba(5,25,70,.35); }
+.dark-1 { background: linear-gradient(120deg, rgba(14,24,50,.78), rgba(30,58,110,.62)); }
+.dark-2 { background: linear-gradient(120deg, rgba(46,53,113,.72), rgba(14,24,50,.74)); }
+.dark .eyebrow { color: rgba(255,255,255,.8); }
+
+/* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
+.vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
+.pista { display: flex; gap: 32px; align-items: flex-start; transition: transform .4s cubic-bezier(.22,.8,.24,1); }
+.muove .pista { will-change: transform; }
+.pag { flex: 0 0 100%; min-width: 0; }
+.pag.off { height: 0; overflow: hidden; visibility: hidden; }
+.muove .pag.off { height: auto; max-height: 78vh; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .pista { transition-duration: .01s; } }
+@media (prefers-reduced-transparency: reduce) { .card, .tg, .barra-giorno, .tabs, .month { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(15,40,95,.88); } }
 `;
 
 function monthKey(d) {
@@ -485,28 +522,61 @@ function MainApp({ session }) {
   const [noteForm, setNoteForm] = useState(null); // contratti dalle note per la data del modulo
   const [sitoNote, setSitoNote] = useState(URL_NOTE); // il blocco note di questo operatore (ognuno ha il suo)
   const formRef = useRef(null);
-  // swipe a destra / sinistra per passare da una schermata all'altra (Giorni · Fine mese · Riepilogo)
+  // swipe a "carrello": la pagina segue il dito, quella accanto entra scorrendo (Giorni · Fine mese · Riepilogo)
   const tocco = useRef(null);
+  const pista = useRef(null);
   const SCHEDE = ["giorni", "finemese", "riepilogo"];
+  const idx = SCHEDE.indexOf(tab);
+  const [muove, setMuove] = useState(false); // true mentre si trascina o si anima: le pagine vicine sono visibili
+  const traslaz = (n) => "translate3d(calc(" + (-n) + " * (100% + 32px)), 0, 0)";
+  useEffect(() => {
+    if (!muove) return;
+    const id = setTimeout(() => setMuove(false), 800); // rete di sicurezza se la transizione non finisce
+    return () => clearTimeout(id);
+  }, [muove]);
+  function vaiA(id) {
+    if (id === tab) return;
+    setMuove(true);
+    setTab(id);
+    setShowFiscali(false);
+    window.scrollTo(0, 0);
+  }
   function inizioTocco(e) {
     const t = e.touches[0];
     // un solo dito, non dai bordi (lì c'è il gesto "indietro" del telefono), non su campi di testo
     if (e.touches.length !== 1 || t.clientX < 24 || t.clientX > window.innerWidth - 24 || e.target.closest("input, textarea, select")) { tocco.current = null; return; }
-    tocco.current = { x: t.clientX, y: t.clientY, t: e.timeStamp };
+    tocco.current = { x: t.clientX, y: t.clientY, t: e.timeStamp, lock: null };
+  }
+  function muoviTocco(e) {
+    const s = tocco.current, el = pista.current;
+    if (!s || !el || showForm || s.lock === "y") return; // con il modulo aperto niente swipe
+    const t = e.touches[0];
+    const dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (s.lock === null) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      s.lock = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y"; // decide una volta sola: orizzontale = carrello, verticale = scroll normale
+      if (s.lock === "y") return;
+      if (window.scrollY > 0) window.scrollTo(0, 0);
+      el.style.transition = "none";
+      setMuove(true);
+    }
+    const fuori = (idx === 0 && dx > 0) || (idx === SCHEDE.length - 1 && dx < 0);
+    const d = fuori ? dx * 0.3 : dx; // ai due estremi la pagina oppone resistenza
+    el.style.transform = "translate3d(calc(" + (-idx) + " * (100% + 32px) + " + d + "px), 0, 0)";
   }
   function fineTocco(e) {
-    const s = tocco.current;
+    const s = tocco.current, el = pista.current;
     tocco.current = null;
-    if (!s || showForm) return; // con il modulo aperto niente swipe: non si perde quello che scrivi per sbaglio
-    const t = e.changedTouches[0];
-    const dx = t.clientX - s.x, dy = t.clientY - s.y;
-    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8 || e.timeStamp - s.t > 700) return;
-    const i = SCHEDE.indexOf(tab);
-    const j = dx < 0 ? i + 1 : i - 1;
-    if (j < 0 || j >= SCHEDE.length) return;
-    setTab(SCHEDE[j]);
-    setShowFiscali(false);
-    window.scrollTo(0, 0);
+    if (!s || s.lock !== "x" || !el) return;
+    const dx = e.changedTouches[0].clientX - s.x;
+    const w = el.parentElement.clientWidth;
+    const veloce = Math.abs(dx) > 40 && e.timeStamp - s.t < 350;
+    let j = idx;
+    if (Math.abs(dx) > w * 0.25 || veloce) j = dx < 0 ? idx + 1 : idx - 1;
+    j = Math.max(0, Math.min(SCHEDE.length - 1, j));
+    el.style.transition = ""; // torna l'animazione di scatto "morbido" definita nel CSS
+    el.style.transform = traslaz(j);
+    if (j !== idx) { setTab(SCHEDE[j]); setShowFiscali(false); }
   }
 
   const key = monthKey(refDate);
@@ -801,7 +871,7 @@ function MainApp({ session }) {
   return (
     <div className="app">
       <style>{CSS}</style>
-      <div className="wrap" onTouchStart={inizioTocco} onTouchEnd={fineTocco}>
+      <div className="wrap" onTouchStart={inizioTocco} onTouchMove={muoviTocco} onTouchEnd={fineTocco} onTouchCancel={fineTocco}>
         <div className="header">
           <div className="brand">
             <div className="logo">
@@ -828,7 +898,7 @@ function MainApp({ session }) {
 
         <div className="tabs">
           {[["giorni", "Giorni"], ["finemese", "Fine mese"], ["riepilogo", "Riepilogo"]].map(([id, lbl]) => (
-            <button key={id} className={tab === id ? "on" : ""} onClick={() => { setTab(id); setShowFiscali(false); }}>{lbl}</button>
+            <button key={id} className={tab === id ? "on" : ""} onClick={() => vaiA(id)}>{lbl}</button>
           ))}
         </div>
 
@@ -837,7 +907,10 @@ function MainApp({ session }) {
 
         {loading ? (
           <p className="muted">Caricamento…</p>
-        ) : tab === "giorni" ? (
+        ) : (
+        <div className={"vista" + (muove ? " muove" : "")}>
+        <div className="pista" ref={pista} style={{ transform: traslaz(idx) }} onTransitionEnd={(e) => { if (e.target === e.currentTarget) setMuove(false); }}>
+        <section className={"pag" + (idx === 0 ? "" : " off")}>
           <div className="stack">
             <div className="card riassunto">
               <div className="rias-top">
@@ -1008,7 +1081,8 @@ function MainApp({ session }) {
               </>
             )}
           </div>
-        ) : tab === "finemese" ? (
+        </section>
+        <section className={"pag" + (idx === 1 ? "" : " off")}>
           <div className="stack">
             <div className="card">
               <h2>KO definitivi</h2>
@@ -1042,7 +1116,9 @@ function MainApp({ session }) {
               KO totali applicati — Luce {koTot.luce} · Gas {koTot.gas} · Telco {koTot.telco} · VAS {koTot.vas}
             </p>
           </div>
-        ) : !showFiscali ? (
+        </section>
+        <section className={"pag" + (idx === 2 ? "" : " off")}>
+        {!showFiscali ? (
           <div className="stack">
             <div className="grid3">
               <div className="card"><div className="stat-label">Ore totali</div><div className="stat-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div></div>
@@ -1105,6 +1181,10 @@ function MainApp({ session }) {
               Stima basata su aliquota IRPEF 23% flat e detrazione da lavoro dipendente fissa a 166,04 €/mese, calibrate sui cedolini reali. Valida finché il reddito annuo cumulato resta sotto i 28.000 €.
             </p>
           </div>
+        )}
+        </section>
+        </div>
+        </div>
         )}
       </div>
     </div>
