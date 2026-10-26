@@ -11,10 +11,10 @@ const CAT = {
 };
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 * { box-sizing: border-box; }
 html, body { margin: 0; overscroll-behavior-x: none; }
-.app { min-height: 100vh; font-family: 'Inter', sans-serif; color: #1E2433; padding: 20px 16px 48px; position: relative; isolation: isolate;
+.app { min-height: 100vh; font-family: 'Manrope', system-ui, sans-serif; line-height: 1.2; color: #1E2433; padding: 20px 16px 48px; position: relative; isolation: isolate;
   background:
     radial-gradient(circle at 0% 0%, #BFD3F7 0%, rgba(191,211,247,0) 45%),
     radial-gradient(circle at 100% 45%, #F2EADB 0%, rgba(242,234,219,0) 40%),
@@ -22,24 +22,24 @@ html, body { margin: 0; overscroll-behavior-x: none; }
     #EDF1F9; }
 .app::before { content: ""; position: fixed; inset: 0; z-index: -1; background: url(/sfondo2.webp) center / cover no-repeat; pointer-events: none; }
 .wrap { max-width: 520px; margin: 0 auto; touch-action: pan-y pinch-zoom; }
-.disp { font-family: 'Space Grotesk', sans-serif; }
+.disp { font-family: 'Manrope', system-ui, sans-serif; }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.logo { width: 38px; height: 38px; border-radius: 50%; background: #2563EB; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px; box-shadow: 0 4px 12px rgba(37,99,235,.3); flex-shrink: 0; }
-.brand h1 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.15; }
+.logo { width: 38px; height: 38px; border-radius: 50%; background: #2563EB; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 17px; box-shadow: 0 4px 12px rgba(37,99,235,.3); flex-shrink: 0; }
+.brand h1 { margin: 0; font-family: 'Manrope', system-ui, sans-serif; font-size: 16px; line-height: 1.15; }
 .logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
 .uname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; text-transform: capitalize; }
 .brand p { margin: 0; font-size: 12px; color: #6B7280; }
 .logout { background: none; border: none; padding: 0; font-size: 12px; color: #2563EB; text-decoration: underline; cursor: pointer; font-family: inherit; }
 .month { display: flex; align-items: center; background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.95); border-radius: 999px; padding: 5px 4px; box-shadow: 0 4px 16px rgba(30,36,51,.06); }
-.month span { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; text-align: center; white-space: nowrap; line-height: 1.2; }
+.month span { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 14px; text-align: center; white-space: nowrap; line-height: 1.2; }
 .month button { background: none; border: none; font-size: 22px; color: #374151; padding: 0 8px; cursor: pointer; }
 .tabs { display: flex; background: rgba(255,255,255,.45); border-radius: 999px; padding: 4px; margin-bottom: 12px; }
 .tabs button { flex: 1; border: none; background: none; padding: 8px 0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #6B7280; cursor: pointer; font-family: inherit; }
 .tabs button.on { background: #fff; color: #111827; font-weight: 600; box-shadow: 0 4px 12px rgba(30,36,51,.08); }
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .card { background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.95); border-radius: 24px; padding: 18px; box-shadow: 0 6px 24px rgba(30,36,51,.05); }
-.card h2 { margin: 0 0 4px; font-family: 'Space Grotesk', sans-serif; font-size: 18px; }
+.card h2 { margin: 0 0 4px; font-family: 'Manrope', system-ui, sans-serif; font-size: 18px; }
 .muted { color: #6B7280; font-size: 13px; }
 .riassunto { padding: 14px 16px; }
 .rias-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 8px; }
@@ -51,7 +51,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .rias-contratti .rias-lab { color: #4F46E5; }
 .rias-resa .rias-lab { color: #2563EB; }
 .rias-lab { font-size: 11.5px; font-weight: 600; line-height: 1.25; }
-.rias-grande { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 31px; margin-top: 3px; white-space: nowrap; }
+.rias-grande { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 31px; margin-top: 3px; white-space: nowrap; }
 .rias-grande small { font-size: 14px; color: #9CA3AF; font-weight: 500; margin-left: 3px; }
 .rias-contratti .rias-grande { color: #4338CA; }
 .rias-resa .rias-grande { color: #1D4ED8; }
@@ -59,12 +59,12 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .rias-resa, .rias-ore { flex: 1; }
 .rias-ore { background: #E6EAF1; }
 .rias-ore .rias-lab { color: #475569; }
-.rias-medio { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 21px; margin-top: 4px; white-space: nowrap; color: #1E293B; }
+.rias-medio { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 21px; margin-top: 4px; white-space: nowrap; color: #1E293B; }
 .rias-medio small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
 .rias-cat { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
 .rias-cat-voce { background: #fff; border-radius: 10px; padding: 5px 8px; display: flex; flex-direction: column; gap: 1px; }
 .rias-cat-nome { font-size: 11px; color: #6B7280; display: flex; align-items: center; gap: 5px; }
-.rias-cat-voce b { font-family: 'Space Grotesk', sans-serif; font-size: 17px; line-height: 1.1; }
+.rias-cat-voce b { font-family: 'Manrope', system-ui, sans-serif; font-size: 17px; line-height: 1.1; }
 .btn-info { background: none; border: 0; color: #2563EB; font-size: 18px; line-height: 1; padding: 0 0 0 8px; cursor: pointer; vertical-align: middle; }
 .tg { background: #F2F6FD; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(30,60,120,.08); }
 .tg-testa, .tg-riga { display: grid; grid-template-columns: 52px 50px 1fr 74px; gap: 4px; align-items: center; padding: 8px 12px; font-size: 13px; }
@@ -94,26 +94,26 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .rias-gira.girata .stat-label { color: #047857; }
 .rias-gira.girata .rias-val { color: #065F46; }
 .rias-val { color: #065F46; }
-.rias-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 19px; margin-top: 3px; white-space: nowrap; color: #1E2433; }
+.rias-val { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 19px; margin-top: 3px; white-space: nowrap; color: #1E2433; }
 .rias-sec { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E3E6EC; }
 .rias-val small { font-size: 12px; color: #9CA3AF; font-weight: 500; margin-left: 2px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .stat-label { font-size: 13px; color: #6B7280; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-.stat-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px; margin-top: 8px; white-space: nowrap; }
+.stat-val { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 28px; margin-top: 8px; white-space: nowrap; }
 .grid3 .stat-val { font-size: 21px; }
 .grid3 .card { padding: 14px; }
 .stat-val small { font-size: 15px; color: #9CA3AF; font-weight: 500; margin-left: 4px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-.big { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 46px; line-height: 1.1; }
+.big { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 46px; line-height: 1.1; }
 .big small { font-size: 22px; color: #9CA3AF; font-weight: 500; margin-left: 8px; }
 .eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #6B7280; }
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
 .tile { border-radius: 16px; padding: 10px; }
 .tile .tl { font-size: 12px; color: #6B7280; margin-top: 8px; }
-.tile .tv { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; }
+.tile .tv { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 20px; }
 .sec-head { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-.sec-head h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 19px; }
+.sec-head h2 { margin: 0; font-family: 'Manrope', system-ui, sans-serif; font-size: 19px; }
 .btn-primary { background: #2563EB; color: #fff; border: none; border-radius: 999px; padding: 11px 18px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 8px 18px rgba(37,99,235,.3); }
 .btn-primary:disabled { background: #A5B4D4; box-shadow: none; }
 .btn-ghost { background: #EEF0F4; color: #4B5563; border: none; border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
@@ -127,7 +127,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .inp:focus { border-color: #93B4F5; }
 .stepper { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.9); border: 1px solid #EEF0F4; border-radius: 18px; padding: 5px; }
 .stepper button { width: 42px; height: 42px; border-radius: 50%; border: none; background: #EEF0F4; color: #1E2433; font-size: 22px; font-weight: 600; cursor: pointer; flex-shrink: 0; font-family: inherit; line-height: 1; }
-.stepper input { flex: 1; min-width: 0; width: 100%; border: none; background: transparent; text-align: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; color: #1E2433; outline: none; -moz-appearance: textfield; }
+.stepper input { flex: 1; min-width: 0; width: 100%; border: none; background: transparent; text-align: center; font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; font-size: 20px; color: #1E2433; outline: none; -moz-appearance: textfield; }
 .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .stepper.small { background: rgba(255,255,255,.75); border: none; width: 160px; }
 .steps { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
@@ -144,7 +144,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .line { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EDEFF3; font-size: 15px; }
 .line:last-child { border-bottom: none; }
 .line span:first-child { color: #6B7280; }
-.line span:last-child { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+.line span:last-child { font-family: 'Manrope', system-ui, sans-serif; font-weight: 700; }
 .dark { border-radius: 24px; padding: 20px; color: #fff; }
 .dark .eyebrow { color: #AEB6CC; }
 .dark .big { color: #fff; }
@@ -235,6 +235,8 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .sotto-nome { flex-wrap: nowrap; gap: 8px; }
 .ponte { font-size: 11.5px; padding: 3px 8px; }
 .month button { padding: 0 5px; }
+/* Manrope ha le righe più alte di Inter: le riporto come prima, così le schermate restano compatte */
+:where(.app) button { line-height: 1.2; }
 
 /* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
 .vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
