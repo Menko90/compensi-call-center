@@ -237,6 +237,7 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .month button { padding: 0 5px; }
 /* Manrope ha le righe più alte di Inter: le riporto come prima, così le schermate restano compatte */
 :where(.app) button { line-height: 1.2; }
+.nota-netto { margin: 8px 0 0; font-size: 11.5px; line-height: 1.4; color: rgba(255,255,255,.78); }
 
 /* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
 .vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
@@ -260,6 +261,31 @@ function fmtEuro(n) {
 }
 function fmtNum(n, decimals = 0) {
   return (n || 0).toLocaleString("it-IT", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+// Netto in busta stimato, contratto co.co.co. (Gestione Separata INPS), regole 2026.
+// È solo un calcolo sul lordo del mese (paga base + provvigioni): niente database, niente dati da inserire.
+// Ogni passaggio usa i risultati dei precedenti: le percentuali non si sommano mai tra loro.
+const NOTA_NETTO = "Stima regole 2026: esclusi conguaglio di dicembre, addizionali, bonus IRPEF e familiari a carico";
+const SCAGLIONI_IRPEF = [ // mensili: 28.000 € e 50.000 € l'anno divisi per 12
+  { fino: 2333.33, aliquota: 0.23 },
+  { fino: 4166.67, aliquota: 0.33 },
+  { fino: Infinity, aliquota: 0.43 },
+];
+function calcolaNetto(lordo, giorniMese) {
+  if (!(lordo > 0)) return { inps: 0, inail: 0, imponibile: 0, irpefLorda: 0, detrazione: 0, irpefNetta: 0, netto: 0 };
+  const inps = lordo * 0.1168; // 1. INPS 11,68%
+  const inail = Math.min(3.76, Math.max(2.02, lordo * 0.001172)); // 2. INAIL 0,1172%, minimo 2,02 €, massimo 3,76 €
+  const imponibile = Math.max(0, lordo - inps - inail); // 3. imponibile
+  let irpefLorda = 0; // 4. IRPEF lorda a scaglioni: ogni aliquota solo sulla sua fascia
+  let da = 0;
+  for (const s of SCAGLIONI_IRPEF) {
+    if (imponibile > da) irpefLorda += (Math.min(imponibile, s.fino) - da) * s.aliquota;
+    da = s.fino;
+  }
+  const detrazione = (1955 * giorniMese) / 365; // 5. detrazione per i giorni del mese
+  const irpefNetta = Math.max(0, irpefLorda - detrazione); // 6. IRPEF netta, minimo 0
+  const netto = Math.round(lordo - inps - inail - irpefNetta); // 7. netto, arrotondato all'euro
+  return { inps, inail, imponibile, irpefLorda, detrazione, irpefNetta, netto };
 }
 function fmtDay(d) {
   return new Date(d + "T00:00:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" });
@@ -841,20 +867,17 @@ function MainApp({ session }) {
   const provvVas = netti.vas * piano.vas;
   const guadagnoTotale = pagaBase + provvLuceGas + provvTelco + provvVas;
 
-  // --- netto stimato co.co.co. ---
-  const contributiPrev = guadagnoTotale * 0.118;
-  const imponibileFiscale = guadagnoTotale - contributiPrev;
-  const irpefLorda = imponibileFiscale * 0.23;
-  const detrazione = 166.04;
-  const irpefNetta = Math.max(0, irpefLorda - detrazione);
-  const nettoStimato = guadagnoTotale - contributiPrev - irpefNetta;
+  // --- netto in busta stimato co.co.co. (regole 2026), sul guadagno lordo del mese ---
+  const giorniMese = new Date(refDate.getFullYear(), refDate.getMonth() + 1, 0).getDate();
+  const fisco = calcolaNetto(guadagnoTotale, giorniMese);
+  const nettoStimato = fisco.netto;
 
   const catKeys = ["luce", "gas", "telco", "vas"];
   // compenso lordo stimato di una giornata, con le stesse regole del Riepilogo:
   // ore × 8,50 € + (luce + gas) × gettone attuale del mese + telco e VAS con gli importi del piano del mese. I KO si tolgono a fine mese.
   const compensoGiorno = (ore, n) => ore * 8.5 + (n.luce + n.gas) * gettone + n.telco * piano.telco + n.vas * piano.vas;
   // netto stimato del giorno: la sua parte del netto del mese (contributi e IRPEF si calcolano sul mese intero)
-  const quotaNetto = guadagnoTotale > 0 ? nettoStimato / guadagnoTotale : 1 - 0.118;
+  const quotaNetto = guadagnoTotale > 0 ? nettoStimato / guadagnoTotale : 1 - 0.1168;
   // solo per chi usa le note: avviso (non blocco) se esiste già una giornata nella stessa data
   const doppione = collegato && !editingId && showForm ? entries.find((e) => e.date === form.date) : null;
   const giorniLista = (() => {
@@ -1186,7 +1209,8 @@ function MainApp({ session }) {
                 <div className="eyebrow" style={{ lineHeight: 1.6 }}>Netto stimato · co.co.co.</div>
                 <button className="btn-dark" onClick={() => setShowFiscali(true)}>Dettagli fiscali</button>
               </div>
-              <div className="big" style={{ marginTop: 8 }}>{fmtEuro(nettoStimato)}</div>
+              <div className="big" style={{ marginTop: 8 }}>{fmtNum(nettoStimato, 0)} €</div>
+              <p className="nota-netto">{NOTA_NETTO}</p>
             </div>
           </div>
         ) : (
@@ -1194,15 +1218,17 @@ function MainApp({ session }) {
             <button className="back" onClick={() => setShowFiscali(false)}>← Torna al Riepilogo</button>
             <h2>Dettagli fiscali</h2>
             <div className="line"><span>Guadagno totale (lordo)</span><span>{fmtEuro(guadagnoTotale)}</span></div>
-            <div className="line"><span>Contributi previdenziali (11,80%)</span><span>{fmtEuro(contributiPrev)}</span></div>
-            <div className="line"><span>Imponibile fiscale</span><span>{fmtEuro(imponibileFiscale)}</span></div>
-            <div className="line"><span>IRPEF lorda (23%)</span><span>{fmtEuro(irpefLorda)}</span></div>
-            <div className="line"><span>Detrazione applicata</span><span>{fmtEuro(detrazione)}</span></div>
-            <div className="line"><span>IRPEF netta</span><span>{fmtEuro(irpefNetta)}</span></div>
-            <div className="line"><span>Netto stimato</span><span>{fmtEuro(nettoStimato)}</span></div>
+            <div className="line"><span>INPS Gestione Separata (11,68%)</span><span>{fmtEuro(fisco.inps)}</span></div>
+            <div className="line"><span>INAIL (0,1172%)</span><span>{fmtEuro(fisco.inail)}</span></div>
+            <div className="line"><span>Imponibile fiscale</span><span>{fmtEuro(fisco.imponibile)}</span></div>
+            <div className="line"><span>IRPEF lorda (a scaglioni)</span><span>{fmtEuro(fisco.irpefLorda)}</span></div>
+            <div className="line"><span>Detrazione ({giorniMese} giorni)</span><span>{fmtEuro(fisco.detrazione)}</span></div>
+            <div className="line"><span>IRPEF netta</span><span>{fmtEuro(fisco.irpefNetta)}</span></div>
+            <div className="line"><span>Netto stimato (all'euro)</span><span>{fmtNum(nettoStimato, 0)} €</span></div>
             <p className="note">
-              Stima basata su aliquota IRPEF 23% flat e detrazione da lavoro dipendente fissa a 166,04 €/mese, calibrate sui cedolini reali. Valida finché il reddito annuo cumulato resta sotto i 28.000 €.
+              Scaglioni IRPEF mensili: 23% fino a 2.333,33 €, 33% da 2.333,33 a 4.166,67 €, 43% oltre. INAIL minimo 2,02 €, massimo 3,76 €. Detrazione: 1.955 € × giorni del mese / 365.
             </p>
+            <p className="note" style={{ marginTop: 6 }}>{NOTA_NETTO}</p>
           </div>
         )}
         </section>
