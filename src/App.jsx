@@ -238,6 +238,21 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 /* Manrope ha le righe più alte di Inter: le riporto come prima, così le schermate restano compatte */
 :where(.app) button { line-height: 1.2; }
 .nota-netto { margin: 8px 0 0; font-size: 11.5px; line-height: 1.4; color: rgba(255,255,255,.78); }
+/* Riepilogo: netto, lordo, ore, resa e gettone in una sola scheda in alto */
+.sintesi { padding: 16px 18px; }
+.sintesi .big { font-size: 42px; margin-top: 4px; }
+.btn-i-scuro { background: rgba(255,255,255,.18); border: 0; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-family: inherit; font-size: 12px; font-weight: 700; line-height: 22px; letter-spacing: 0; padding: 0; margin-left: 6px; vertical-align: middle; cursor: pointer; }
+.sint-riga { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
+.sint-lordo { color: rgba(255,255,255,.85); font-size: 14px; }
+.sint-lordo b { color: #fff; font-weight: 700; }
+.sint-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.22); }
+.sint-lab { font-size: 11.5px; color: rgba(255,255,255,.75); }
+.sint-val { font-size: 18px; font-weight: 700; color: #fff; white-space: nowrap; margin-top: 2px; }
+.sint-val small { font-size: 12px; color: rgba(255,255,255,.7); font-weight: 500; margin-left: 1px; }
+.row.riga-totale { font-weight: 700; border-top: 2px solid rgba(30,60,120,.22); }
+.row.riga-totale small { font-weight: 500; color: #64748B; font-size: 12px; margin-left: 6px; }
+.ko-rosso { color: #DC2626; font-weight: 700; }
+.ko-zero { color: #6B7280; }
 
 /* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
 .vista { overflow-x: clip; margin: 0 -16px; padding: 0 16px 6px; }
@@ -257,10 +272,18 @@ function emptyKo() {
   return { ko_luce: 0, ko_gas: 0, ko_telco: 0, ko_vas: 0, ko_vas_luce: 0, ko_vas_gas: 0, ko_vas_telco: 0 };
 }
 function fmtEuro(n) {
-  return (n || 0).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  return fmtNum(n, 2) + " €";
 }
+// numeri all'italiana, sempre con il punto delle migliaia (alcuni telefoni scrivevano "1514,72" senza punto)
 function fmtNum(n, decimals = 0) {
-  return (n || 0).toLocaleString("it-IT", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  const s = (n || 0).toLocaleString("it-IT", { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: false });
+  const [intero, dec] = s.split(",");
+  return intero.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec ? "," + dec : "");
+}
+// resa senza mai arrotondare per eccesso: 0,597 non deve sembrare 0,60 (il gettone cambia a 0,50 / 0,60 / 0,70)
+function fmtResa(x, decimals) {
+  const f = 10 ** decimals;
+  return fmtNum(Math.floor((x || 0) * f + 1e-9) / f, decimals);
 }
 // Netto in busta stimato, contratto co.co.co. (Gestione Separata INPS), regole 2026.
 // È solo un calcolo sul lordo del mese (paga base + provvigioni): niente database, niente dati da inserire.
@@ -296,7 +319,7 @@ const emptyForm = { date: "", hours: "", luce: "", gas: "", telco: "", vas: "" }
 // gettoni = importi Luce/Gas per resa >= 0,70 / >= 0,60 / >= 0,50 (sotto 0,50: 0 €)
 const PIANI = [
   { da: "2000-01", gettoni: [20, 15, 5], telco: 10, vas: 2, nota: "" },
-  { da: "2026-10", gettoni: [10, 7.5, 2.5], telco: 10, vas: 1, nota: "Da ottobre 2026 le provvigioni sono pagate al 50%: gettone 10 / 7,50 / 2,50 €, VAS 1 €. Telco invariato a 10 € finché non viene comunicato diversamente." },
+  { da: "2026-10", gettoni: [10, 7.5, 2.5], telco: 5, vas: 1, nota: "Da ottobre 2026 le provvigioni sono pagate al 50%: gettone 10 / 7,50 / 2,50 €, Telco 5 €, VAS 1 €." },
 ];
 function pianoDelMese(k) {
   let p = PIANI[0];
@@ -545,6 +568,8 @@ function MainApp({ session }) {
   const [selGiorno, setSelGiorno] = useState(null); // giorno selezionato nell'elenco (barra Modifica/Elimina)
   const [infoCompenso, setInfoCompenso] = useState(false); // spiegazione del compenso del giorno: chiusa di default
   const [showFiscali, setShowFiscali] = useState(false);
+  const [infoNetto, setInfoNetto] = useState(false); // ⓘ del netto (cosa è escluso dalla stima)
+  const [infoPiano, setInfoPiano] = useState(false); // ⓘ della scomposizione (provvigioni del mese)
   const [entries, setEntries] = useState([]);
   const [ko, setKo] = useState(emptyKo());
   const [loading, setLoading] = useState(true);
@@ -841,7 +866,8 @@ function MainApp({ session }) {
   };
   const totaleLordi = gross.luce + gross.gas + gross.telco;
 
-  const resa = totalHours > 0 ? totaleLordi / totalHours : 0;
+  const minutiTotali = Math.round(totalHours * 60);
+  const resa = minutiTotali > 0 ? (totaleLordi * 60) / minutiTotali : 0;
   const piano = pianoDelMese(key);
   let gettone = 0;
   if (resa >= 0.7) gettone = piano.gettoni[0];
@@ -975,7 +1001,7 @@ function MainApp({ session }) {
                 <div className="rias-destra">
                   <div className="rias-tessera rias-resa">
                     <div className="rias-lab">Resa oraria</div>
-                    <div className="rias-grande">{fmtNum(resa, 2)}<small>/h</small></div>
+                    <div className="rias-grande">{fmtResa(resa, 2)}<small>/h</small></div>
                   </div>
                   <div className="rias-tessera rias-ore">
                     <div className="rias-lab">Ore totali</div>
@@ -1166,15 +1192,22 @@ function MainApp({ session }) {
         <section className={"pag" + (idx === 2 ? "" : " off")}>
         {!showFiscali ? (
           <div className="stack">
-            <div className="grid3">
-              <div className="card"><div className="stat-label">Ore totali</div><div className="stat-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div></div>
-              <div className="card"><div className="stat-label">Resa oraria</div><div className="stat-val">{fmtNum(resa * 100, 1)}%</div></div>
-              <div className="card"><div className="stat-label">Gettone</div><div className="stat-val">{fmtNum(gettone, gettone % 1 ? 2 : 0)}€</div></div>
-            </div>
-
-            <div className="card">
-              <div className="eyebrow">Contratti lordi · Luce + Gas + Telco</div>
-              <div className="big">{totaleLordi}</div>
+            <div className="dark dark-2 sintesi">
+              <div className="eyebrow">
+                Netto stimato · co.co.co.
+                <button type="button" className="btn-i-scuro" aria-label="Cosa è escluso dalla stima" aria-expanded={infoNetto} onClick={() => setInfoNetto((v) => !v)}>i</button>
+              </div>
+              <div className="big">{fmtNum(nettoStimato, 0)} €</div>
+              {infoNetto && <p className="nota-netto">{NOTA_NETTO}</p>}
+              <div className="sint-riga">
+                <div className="sint-lordo">Lordo <b>{fmtEuro(guadagnoTotale)}</b></div>
+                <button className="btn-dark" onClick={() => setShowFiscali(true)}>Dettagli fiscali</button>
+              </div>
+              <div className="sint-mini">
+                <div><div className="sint-lab">Ore totali</div><div className="sint-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div></div>
+                <div><div className="sint-lab">Resa oraria</div><div className="sint-val">{fmtResa(resa, 3)}<small>/h</small></div></div>
+                <div><div className="sint-lab">Gettone</div><div className="sint-val">{fmtGettone(gettone)}</div></div>
+              </div>
             </div>
 
             <div className="card">
@@ -1184,33 +1217,28 @@ function MainApp({ session }) {
                 <div key={k} className="row">
                   <span className="cat"><Dot color={CAT[k].color} />{CAT[k].label}</span>
                   <span className="r">{gross[k]}</span>
-                  <span className="r" style={{ color: "#6B7280" }}>{koTot[k]}</span>
+                  <span className={"r" + (koTot[k] > 0 ? " ko-rosso" : " ko-zero")}>{koTot[k]}</span>
                   <span className="r disp" style={{ color: CAT[k].color, fontWeight: 700 }}>{netti[k]}</span>
                 </div>
               ))}
+              <div className="row riga-totale">
+                <span className="cat">Totale<small>luce+gas+telco</small></span>
+                <span className="r">{totaleLordi}</span>
+                <span className={"r" + (koTot.luce + koTot.gas + koTot.telco > 0 ? " ko-rosso" : " ko-zero")}>{koTot.luce + koTot.gas + koTot.telco}</span>
+                <span className="r">{netti.luce + netti.gas + netti.telco}</span>
+              </div>
             </div>
 
             <div className="card">
-              <h2>Scomposizione guadagno</h2>
+              <h2>
+                Scomposizione guadagno
+                {piano.nota && <button type="button" className="btn-info" aria-label="Provvigioni di questo mese" aria-expanded={infoPiano} onClick={() => setInfoPiano((v) => !v)}>ⓘ</button>}
+              </h2>
               <div className="line"><span>Paga base (8,50 €/h)</span><span>{fmtEuro(pagaBase)}</span></div>
               <div className="line"><span>Provvigioni Luce + Gas</span><span>{fmtEuro(provvLuceGas)}</span></div>
               <div className="line"><span>Provvigioni Telco</span><span>{fmtEuro(provvTelco)}</span></div>
               <div className="line"><span>Provvigioni VAS</span><span>{fmtEuro(provvVas)}</span></div>
-              {piano.nota && <p className="note">{piano.nota}</p>}
-            </div>
-
-            <div className="dark dark-1">
-              <div className="eyebrow">Guadagno totale</div>
-              <div className="big" style={{ marginTop: 8 }}>{fmtEuro(guadagnoTotale)}</div>
-            </div>
-
-            <div className="dark dark-2">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                <div className="eyebrow" style={{ lineHeight: 1.6 }}>Netto stimato · co.co.co.</div>
-                <button className="btn-dark" onClick={() => setShowFiscali(true)}>Dettagli fiscali</button>
-              </div>
-              <div className="big" style={{ marginTop: 8 }}>{fmtNum(nettoStimato, 0)} €</div>
-              <p className="nota-netto">{NOTA_NETTO}</p>
+              {piano.nota && infoPiano && <p className="note">{piano.nota}</p>}
             </div>
           </div>
         ) : (
