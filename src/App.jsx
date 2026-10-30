@@ -252,6 +252,8 @@ html, body { margin: 0; overscroll-behavior-x: none; }
 .row.riga-totale { font-weight: 700; border-top: 2px solid rgba(30,60,120,.22); }
 .row.riga-totale small { font-weight: 500; color: #64748B; font-size: 12px; margin-left: 6px; }
 .ko-rosso { color: #DC2626; font-weight: 700; }
+/* percentuale KO accanto ai contratti lordi: piccola, dello stesso colore della scritta */
+.ko-accanto { font-size: 12px; font-weight: 500; color: rgba(46,31,143,.6); margin-left: 7px; letter-spacing: 0; }
 .ko-zero { color: #6B7280; }
 
 /* ===== Carrello: le tre schermate scorrono in orizzontale e seguono il dito ===== */
@@ -281,6 +283,11 @@ function fmtNum(n, decimals = 0) {
   return intero.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec ? "," + dec : "");
 }
 // resa senza mai arrotondare per eccesso: 0,597 non deve sembrare 0,60 (il gettone cambia a 0,50 / 0,60 / 0,70)
+// percentuale con al massimo un decimale: 14% · 2,2%
+function fmtPerc(x) {
+  const r = Math.round((x || 0) * 10) / 10;
+  return fmtNum(r, Number.isInteger(r) ? 0 : 1) + "%";
+}
 function fmtResa(x, decimals) {
   const f = 10 ** decimals;
   return fmtNum(Math.floor((x || 0) * f + 1e-9) / f, decimals);
@@ -880,6 +887,9 @@ function MainApp({ session }) {
     telco: ko.ko_telco + ko.ko_vas_telco,
     vas: ko.ko_vas + ko.ko_vas_luce + ko.ko_vas_gas + ko.ko_vas_telco,
   };
+  // percentuale dei KO sui contratti lordi (luce + gas + telco, come il totale dei lordi)
+  const koLordi = koTot.luce + koTot.gas + koTot.telco;
+  const koPerc = totaleLordi > 0 ? Math.min(100, (koLordi * 100) / totaleLordi) : null;
   const netti = {
     luce: Math.max(0, gross.luce - koTot.luce),
     gas: Math.max(0, gross.gas - koTot.gas),
@@ -988,7 +998,11 @@ function MainApp({ session }) {
               <div className="rias-top">
                 <div className="rias-tessera rias-contratti">
                   <div className="rias-lab">Contratti lordi</div>
-                  <div className="rias-grande">{totaleLordi}</div>
+                  <div className="rias-grande">
+                    {totaleLordi}
+                    {/* percentuale KO, piccola e discreta accanto al numero */}
+                    {koPerc != null && <span className="ko-accanto">KO {fmtPerc(koPerc)}</span>}
+                  </div>
                   <div className="rias-cat">
                     {catKeys.map((k) => (
                       <div key={k} className="rias-cat-voce">
