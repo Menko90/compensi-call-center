@@ -327,6 +327,19 @@ const emptyForm = { date: "", hours: "", luce: "", gas: "", telco: "", vas: "" }
 const PIANI = [
   { da: "2000-01", gettoni: [20, 15, 5], telco: 10, vas: 2, nota: "" },
   { da: "2026-10", gettoni: [10, 7.5, 2.5], telco: 5, vas: 1, nota: "Da ottobre 2026 le provvigioni sono pagate al 50%: gettone 10 / 7,50 / 2,50 €, Telco 5 €, VAS 1 €." },
+  // Piano ENERGY Q4 2026: la fascia la decide la validità (contratti OK ÷ fatti, luce+gas+telco),
+  // la riga la resa (>= 0,70 / 0,60 / 0,50 / 0,40). Sotto il 50% di validità o sotto 0,40 di resa: 0 €.
+  // In più il 10% dei contratti fatti (arrotondato per eccesso) non viene pagato, tolto prima dai Luce/Gas.
+  {
+    da: "2026-11", telco: 5, vas: 1, trattenuta: 0.10,
+    fasce: [
+      { min: 0.80, nome: "Verde", g: [10, 7.5, 2.5, 1.5] },
+      { min: 0.70, nome: "Gialla", g: [8, 6, 2, 1.2] },
+      { min: 0.60, nome: "Arancione", g: [5.6, 4.2, 1.4, 0.84] },
+      { min: 0.50, nome: "Rosa", g: [3.36, 2.52, 0.84, 0.5] },
+    ],
+    nota: "Da novembre 2026 (piano Energy Q4): la fascia dipende dalla validità (contratti OK sul totale fatti, Luce+Gas+Telco): Verde ≥ 80%, Gialla ≥ 70%, Arancione ≥ 60%, Rosa ≥ 50%, Rossa sotto il 50% (0 €). Il gettone dipende anche dalla resa (0,40 / 0,50 / 0,60 / 0,70). Il 10% dei contratti fatti non viene pagato. Telco (Cross) 5 €, VAS 1 €.",
+  },
 ];
 function pianoDelMese(k) {
   let p = PIANI[0];
@@ -876,10 +889,6 @@ function MainApp({ session }) {
   const minutiTotali = Math.round(totalHours * 60);
   const resa = minutiTotali > 0 ? (totaleLordi * 60) / minutiTotali : 0;
   const piano = pianoDelMese(key);
-  let gettone = 0;
-  if (resa >= 0.7) gettone = piano.gettoni[0];
-  else if (resa >= 0.6) gettone = piano.gettoni[1];
-  else if (resa >= 0.5) gettone = piano.gettoni[2];
 
   const koTot = {
     luce: ko.ko_luce + ko.ko_vas_luce,
@@ -897,11 +906,38 @@ function MainApp({ session }) {
     vas: Math.max(0, gross.vas - koTot.vas),
   };
 
+  // validità = contratti OK ÷ contratti fatti (luce + gas + telco); conta solo nei piani con le fasce
+  const nettiLGT = netti.luce + netti.gas + netti.telco;
+  const validita = totaleLordi > 0 ? nettiLGT / totaleLordi : null;
+  let gettone = 0;
+  let fascia = null; // nome della fascia (solo piani con le fasce)
+  if (piano.fasce) {
+    const f = piano.fasce.find((x) => validita === null || validita >= x.min - 1e-9);
+    fascia = f ? f.nome : "Rossa";
+    if (f) {
+      if (resa >= 0.7) gettone = f.g[0];
+      else if (resa >= 0.6) gettone = f.g[1];
+      else if (resa >= 0.5) gettone = f.g[2];
+      else if (resa >= 0.4) gettone = f.g[3];
+    }
+  } else {
+    if (resa >= 0.7) gettone = piano.gettoni[0];
+    else if (resa >= 0.6) gettone = piano.gettoni[1];
+    else if (resa >= 0.5) gettone = piano.gettoni[2];
+  }
+
+  // trattenuta: una parte dei contratti fatti non viene pagata (arrotondata per eccesso),
+  // tolta prima dai Luce/Gas OK e, se non bastano, dai Telco OK
+  const trattenuti = piano.trattenuta ? Math.ceil(totaleLordi * piano.trattenuta - 1e-9) : 0;
+  const trattLG = Math.min(trattenuti, netti.luce + netti.gas);
+  const trattT = Math.min(trattenuti - trattLG, netti.telco);
+
   const pagaBase = totalHours * 8.5;
   const provvLuceGas = (netti.luce + netti.gas) * gettone;
   const provvTelco = netti.telco * piano.telco;
   const provvVas = netti.vas * piano.vas;
-  const guadagnoTotale = pagaBase + provvLuceGas + provvTelco + provvVas;
+  const trattenutaEuro = trattLG * gettone + trattT * piano.telco;
+  const guadagnoTotale = pagaBase + provvLuceGas + provvTelco + provvVas - trattenutaEuro;
 
   // --- netto in busta stimato co.co.co. (regole 2026), sul guadagno lordo del mese ---
   const giorniMese = new Date(refDate.getFullYear(), refDate.getMonth() + 1, 0).getDate();
@@ -911,7 +947,9 @@ function MainApp({ session }) {
   const catKeys = ["luce", "gas", "telco", "vas"];
   // compenso lordo stimato di una giornata, con le stesse regole del Riepilogo:
   // ore × 8,50 € + (luce + gas) × gettone attuale del mese + telco e VAS con gli importi del piano del mese. I KO si tolgono a fine mese.
-  const compensoGiorno = (ore, n) => ore * 8.5 + (n.luce + n.gas) * gettone + n.telco * piano.telco + n.vas * piano.vas;
+  // con la trattenuta del piano, si toglie la stessa quota anche dalla stima del giorno (valutata al gettone)
+  const compensoGiorno = (ore, n) => ore * 8.5 + (n.luce + n.gas) * gettone + n.telco * piano.telco + n.vas * piano.vas
+    - (piano.trattenuta ? (n.luce + n.gas + n.telco) * piano.trattenuta * gettone : 0);
   // netto stimato del giorno: la sua parte del netto del mese (contributi e IRPEF si calcolano sul mese intero)
   const quotaNetto = guadagnoTotale > 0 ? nettoStimato / guadagnoTotale : 1 - 0.1168;
   // solo per chi usa le note: avviso (non blocco) se esiste già una giornata nella stessa data
@@ -1220,7 +1258,7 @@ function MainApp({ session }) {
               <div className="sint-mini">
                 <div><div className="sint-lab">Ore totali</div><div className="sint-val">{splitHM(totalHours).h}<small>h</small>{splitHM(totalHours).m ? <> {splitHM(totalHours).m}<small>m</small></> : null}</div></div>
                 <div><div className="sint-lab">Resa oraria</div><div className="sint-val">{fmtResa(resa, 3)}<small>/h</small></div></div>
-                <div><div className="sint-lab">Gettone</div><div className="sint-val">{fmtGettone(gettone)}</div></div>
+                <div><div className="sint-lab">{fascia ? `Gettone · ${fascia}` : "Gettone"}</div><div className="sint-val">{fmtGettone(gettone)}</div></div>
               </div>
             </div>
 
@@ -1248,10 +1286,12 @@ function MainApp({ session }) {
                 Scomposizione guadagno
                 {piano.nota && <button type="button" className="btn-info" aria-label="Provvigioni di questo mese" aria-expanded={infoPiano} onClick={() => setInfoPiano((v) => !v)}>ⓘ</button>}
               </h2>
+              {fascia && <div className="line"><span>Validità {validita === null ? "—" : fmtNum(validita * 100, 1) + "%"}</span><span>Fascia {fascia}</span></div>}
               <div className="line"><span>Paga base (8,50 €/h)</span><span>{fmtEuro(pagaBase)}</span></div>
               <div className="line"><span>Provvigioni Luce + Gas</span><span>{fmtEuro(provvLuceGas)}</span></div>
               <div className="line"><span>Provvigioni Telco</span><span>{fmtEuro(provvTelco)}</span></div>
               <div className="line"><span>Provvigioni VAS</span><span>{fmtEuro(provvVas)}</span></div>
+              {piano.trattenuta ? <div className="line"><span>Trattenuta {fmtNum(piano.trattenuta * 100, 0)}% ({trattenuti} contratti)</span><span>− {fmtEuro(trattenutaEuro)}</span></div> : null}
               {piano.nota && infoPiano && <p className="note">{piano.nota}</p>}
             </div>
           </div>
